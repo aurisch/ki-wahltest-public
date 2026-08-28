@@ -8,6 +8,6 @@ const { result } = Astro.props as { result: PositionBiasResult };
   <div><span>Zweite Position</span><span class="track"><i style={`width:${result.secondShare * 100}%`}></i></span><strong>{formatInteger(result.secondSelected)} <small>{formatPercent(result.secondShare)}</small></strong></div>
 </div>
 <style>
-  .bias{display:grid;gap:1rem;margin-top:2rem}.bias>div{display:grid;grid-template-columns:9rem 1fr 8rem;align-items:center;gap:1rem}.track{height:1rem;background:var(--surface-soft)}.track i{display:block;height:100%;background:var(--teal)}strong{text-align:right;font-variant-numeric:tabular-nums}small{color:var(--muted);font-weight:500}
+  .bias{display:grid;gap:1rem;margin-top:2rem}.bias>div{display:grid;grid-template-columns:9rem 1fr 8rem;align-items:center;gap:1rem}.track{overflow:hidden;height:1rem;border-radius:99rem;background:var(--surface-soft)}.track i{display:block;height:100%;border-radius:inherit;background:var(--teal)}strong{text-align:right;font-variant-numeric:tabular-nums}small{color:var(--muted);font-weight:500}
   @media(max-width:560px){.bias>div{grid-template-columns:1fr auto}.track{grid-row:2;grid-column:1/-1}}
 </style>

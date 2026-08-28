@@ -16,8 +16,8 @@ const { ranking, compact = false } = Astro.props;
   </ol>
 </div>
 <style>
-  .ranking ol{margin:2rem 0 0;padding:0;border-top:1px solid var(--line);list-style:none}.ranking li{display:grid;grid-template-columns:2rem minmax(11rem,1fr) minmax(8rem,1.6fr) 4.5rem;align-items:center;gap:1rem;padding:.8rem 0;border-bottom:1px solid var(--line)}
-  .rank-number{color:var(--muted);font-variant-numeric:tabular-nums}.rank-party{color:var(--ink);font-weight:700;text-decoration:none}.rank-party:hover{text-decoration:underline}.rank-party small{display:block;color:var(--muted);font-size:.75rem;font-weight:500}.rank-track{height:.52rem;background:var(--surface-soft)}.rank-track i{display:block;height:100%;background:var(--teal)}.ranking strong{text-align:right;font-variant-numeric:tabular-nums}
+  .ranking ol{margin:2rem 0 0;padding:0;border-top:1px solid var(--line);list-style:none}.ranking li{display:grid;grid-template-columns:2rem minmax(11rem,1fr) minmax(8rem,1.6fr) 4.5rem;align-items:center;gap:1rem;padding:.8rem .5rem;margin-inline:-.5rem;border-radius:var(--radius);border-bottom:1px solid var(--line);transition:background-color .18s var(--ease)}.ranking li:hover{background:var(--surface-soft)}
+  .rank-number{color:var(--muted);font-variant-numeric:tabular-nums}.rank-party{color:var(--ink);font-weight:700;text-decoration:none}.rank-party:hover{text-decoration:underline}.rank-party small{display:block;color:var(--muted);font-size:.75rem;font-weight:500}.rank-track{overflow:hidden;height:.52rem;border-radius:99rem;background:var(--surface-soft)}.rank-track i{display:block;height:100%;border-radius:inherit;background:var(--teal);transition:width .4s var(--ease)}.ranking strong{text-align:right;font-variant-numeric:tabular-nums}
   .ranking--compact li{grid-template-columns:1.5rem minmax(9rem,1fr) minmax(5rem,1.2fr) 4rem;padding:.58rem 0}.ranking--compact .rank-party small{display:none}
-  @media(max-width:600px){.ranking li{grid-template-columns:1.5rem 1fr 4rem}.rank-track{grid-column:2 / -1;width:100%}}
+  @media(max-width:600px){.ranking li{grid-template-columns:1.5rem 1fr 4rem;grid-template-rows:auto auto}.rank-number{grid-column:1;grid-row:1}.rank-party{grid-column:2;grid-row:1}.ranking strong{grid-column:3;grid-row:1}.rank-track{grid-column:1 / -1;grid-row:2;width:100%}}
 </style>

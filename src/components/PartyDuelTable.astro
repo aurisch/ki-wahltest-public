@@ -12,6 +12,6 @@ const { party, duels } = Astro.props as { party: PartyName; duels: PartyDuel[] }
   </a>)}
 </div>
 <style>
-  .duel-list{margin-top:2rem;border-top:1px solid var(--line)}.duel-list a{display:grid;grid-template-columns:1fr 7rem 7rem;align-items:center;gap:1rem;padding:.9rem 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}.duel-list a:hover{background:var(--surface-soft)}.score{font-size:1.3rem;font-variant-numeric:tabular-nums}.score strong{font-size:1.65rem}.score i{padding-inline:.35rem;color:var(--line-strong);font-style:normal}.outcome{color:var(--muted);font-size:.76rem;font-weight:700;text-align:right;text-transform:uppercase}
+  .duel-list{margin-top:2rem;border-top:1px solid var(--line)}.duel-list a{display:grid;grid-template-columns:1fr 7rem 7rem;align-items:center;gap:1rem;padding:.9rem .5rem;margin-inline:-.5rem;border-radius:var(--radius);border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;transition:background-color .18s var(--ease)}.duel-list a:hover{background:var(--surface-soft)}.score{font-size:1.3rem;font-variant-numeric:tabular-nums}.score strong{font-size:1.65rem}.score i{padding-inline:.35rem;color:var(--line-strong);font-style:normal}.outcome{color:var(--muted);font-size:.76rem;font-weight:700;text-align:right;text-transform:uppercase}
   @media(max-width:560px){.duel-list a{grid-template-columns:1fr auto}.outcome{grid-column:1/-1;text-align:left}.score{text-align:right}}
 </style>
