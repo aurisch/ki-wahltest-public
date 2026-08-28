@@ -75,6 +75,8 @@ for (const css of readdirSync(join(dist, '_astro')).filter((name) => name.endsWi
 const homepage = readFileSync(join(dist, 'index.html'), 'utf8');
 const experiment = readFileSync(join(dist, 'experimente/gpt-5.6-sol-main-v2/index.html'), 'utf8');
 if (!homepage.includes('href="/experimente/gpt-5.6-sol-main-v2/#prompt"') || !experiment.includes('id="prompt"')) fail('Prompt-Link oder #prompt-Anker fehlt.');
+if (!homepage.includes('href="https://github.com/aurisch/ki-wahltest-public"')) fail('Öffentlicher Quellcode-Link fehlt oder zeigt nicht auf das Public-Repository.');
+if (files.some((file) => readFileSync(file, 'utf8').includes('https://github.com/aurisch/ki-wahltest-private'))) fail('Private Repository-URL wird in der Website ausgeliefert.');
 for (const path of allowedLegalTexts.keys()) if (!legalScriptsFound.has(path)) fail(`${path}: freigegebenes Rechtstext-Skript fehlt.`);
 
 console.log(`WEBSITE AUDIT: PASS · ${files.length} HTML-Seiten · 10 Parteiseiten · 45 Duellseiten · ${checkedLinks} interne Links.`);

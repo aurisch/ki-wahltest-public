@@ -97,6 +97,12 @@ Ein sauberer Vergleich zweier Modellgenerationen setzt möglichst identische Ver
 
 `npm run build` erzeugt in `dist/` eine statische Website. Die Basisdomain ist in `astro.config.mjs` auf `https://ki-wahltest.de` gesetzt. Die CI führt Daten-Audit, Typechecks, Tests, Build, Site-Audit und Launch-Gate aus, aber bewusst kein Production-Deployment.
 
+## Public Release
+
+Die Entwicklung erfolgt im privaten Entwicklungsrepository. Das öffentliche Repository [aurisch/ki-wahltest-public](https://github.com/aurisch/ki-wahltest-public) enthält ausschließlich geprüfte Veröffentlichungsstände und behält eine eigene, saubere Release-Historie; die private Entwicklungshistorie wird bewusst nicht übertragen.
+
+`npm run release:public` prüft den aktuellen privaten Commit vollständig und bereitet daraus einen lokalen Commit im Public-Repository vor. Das Skript pusht nicht. Nach der manuellen Kontrolle muss die Veröffentlichung im Public-Repository bewusst mit `git push origin main` ausgelöst werden.
+
 ## Methodischer Hinweis
 
 Das Projekt beantwortet nicht „Welche Partei sollte man wählen?“, sondern untersucht, wie sich Modellentscheidungen unter dokumentierten Änderungen der Eingabe unterscheiden. Eine beobachtete Häufigkeit von 100/100 oder 200/200 ist eine Beschreibung dieses Laufs und keine Garantie einer wahren Wahrscheinlichkeit von 100 Prozent.
