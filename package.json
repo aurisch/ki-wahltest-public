@@ -8,8 +8,6 @@
     "audit:data": "node scripts/audit-data.mjs",
     "audit:site": "node scripts/audit-site.mjs",
     "check:launch": "npm run build && npm run audit:site && node scripts/check-launch.mjs",
-    "release:check": "node scripts/check-public-release.mjs",
-    "release:public": "bash scripts/prepare-public-release.sh",
     "validate:data": "npm run audit:data",
     "prebuild": "npm run audit:data",
     "build": "astro build",
