@@ -1,0 +1,24 @@
+---
+import OrderEffectList from '../../components/OrderEffectList.astro';
+import PartyDuelTable from '../../components/PartyDuelTable.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatInteger, formatPercent } from '../../lib/format';
+import { partySlug } from '../../lib/parties';
+import { partySummaries } from '../../lib/party-results';
+export function getStaticPaths() {
+  return partySummaries.map((summary) => ({ params: { slug: partySlug(summary.party) }, props: { summary } }));
+}
+const { summary } = Astro.props;
+const name = summary.party;
+const effects = summary.strongestOrderEffects.filter((duel) => duel.pair.sensitivityPercentagePoints > 0).slice(0, 5);
+---
+<BaseLayout title={`${name} im KI-Wahltest`} description={`So entschied GPT-5.6 Sol in 1.800 paarweisen Tests mit Beteiligung von ${summary.party}.`}>
+  <section class="party-hero"><div class="container"><p class="eyebrow">Partei im Experiment</p><h1>{name} im KI-Wahltest</h1><p class="lede">Wie GPT-5.6 Sol in 1.800 paarweisen Entscheidungen mit Beteiligung von {summary.party} entschied.</p><div class="party-metric"><p><strong>{formatInteger(summary.result.selected)}</strong><span>von {formatInteger(summary.result.decisions)} Entscheidungen</span></p><p><strong>{formatPercent(summary.result.share)}</strong><span>Auswahlquote</span></p><p><strong>{summary.won} von 9</strong><span>direkten Duellen gewonnen</span></p></div><p class="explain">{summary.party} trat gegen jede der anderen neun Parteien jeweils 200-mal an – 100-mal in jeder Reihenfolge.</p></div></section>
+  <section class="section section--surface"><div class="container"><p class="eyebrow">Alle direkten Gegner</p><h2>{name} im Vergleich</h2><p class="lede">Die erste Zahl zeigt immer die Entscheidungen für {summary.party}, die zweite die Entscheidungen für die gegnerische Partei.</p><PartyDuelTable party={summary.party} duels={summary.duels} /></div></section>
+  <section class="section"><div class="container"><p class="eyebrow">Reihenfolgeeffekt</p><h2>Wie stark unterschieden sich die beiden Reihenfolgen?</h2>{effects.length ? <><p class="lede">Bei diesen Duellen unterschieden sich die Ergebnisse zwischen den beiden Reihenfolgen am stärksten.</p><OrderEffectList pairs={effects.map((duel) => duel.pair)} /></> : <p class="lede">Bei den neun Duellen mit {summary.party} wurde kein Unterschied zwischen den beiden Reihenfolgen beobachtet.</p>}</div></section>
+  <section class="section section--surface"><div class="container"><div class="split"><div><p class="eyebrow">Einordnung</p><h2>Was die Zahlen bedeuten</h2><p>Die Ergebnisse beschreiben diesen dokumentierten Versuch mit GPT-5.6 Sol. Sie sind keine Wahlumfrage, keine Aussage über Wählerinnen und Wähler und keine Empfehlung für oder gegen {summary.party}.</p></div><div><p class="eyebrow">Nachprüfen</p><h2>Methodik und Rohdaten</h2><div class="link-list"><a href="/methodik/">So wurde getestet</a><a href="/daten/">Primärdaten herunterladen</a><a href="/duelle/">Vollständige Duellmatrix</a></div></div></div></div></section>
+</BaseLayout>
+<style>
+  .party-hero{padding-block:clamp(3.75rem,8vw,7rem)}.party-metric{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:3rem}.party-metric p{padding-top:1rem;border-top:2px solid var(--ink)}.party-metric strong,.party-metric span{display:block}.party-metric strong{font-size:clamp(2.2rem,5vw,4.2rem);line-height:1;letter-spacing:-.055em}.party-metric span{margin-top:.55rem;color:var(--muted)}.explain{max-width:46rem;margin-top:2rem;color:var(--muted)}.split{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(2rem,8vw,7rem)}.split h2{font-size:clamp(1.6rem,3vw,2.4rem)}.split h2+p{margin-top:1rem}
+  @media(max-width:700px){.party-metric,.split{grid-template-columns:1fr}.party-metric p{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}.party-metric strong{font-size:2.3rem}.party-metric span{text-align:right}}
+</style>

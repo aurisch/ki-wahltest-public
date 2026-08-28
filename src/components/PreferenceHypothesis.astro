@@ -1,0 +1,31 @@
+---
+import { shortPartyName } from '../lib/parties';
+import type { OrderResult, PairResult, PartyName } from '../lib/types';
+const { stable, sensitive } = Astro.props as { stable: PairResult; sensitive: PairResult };
+const stableWinner = stable.majority;
+const stableLoser = stable.parties.find((party) => party !== stableWinner)!;
+const selectedFor = (order: OrderResult, party: PartyName) => order.first === party ? order.firstSelected : order.secondSelected;
+const [sensitiveA, sensitiveB] = sensitive.parties;
+---
+<div class="hypothesis-contrast">
+  <article>
+    <p class="contrast-label">Eine klare beobachtete Präferenz</p>
+    <h3>{shortPartyName(stableWinner)} ↔ {shortPartyName(stableLoser)}</h3>
+    <dl class="total"><div><dt>{shortPartyName(stableWinner)}</dt><dd>{stable.totals[stableWinner]}</dd></div><div><dt>{shortPartyName(stableLoser)}</dt><dd>{stable.totals[stableLoser]}</dd></div></dl>
+    <div class="orders">{stable.orders.map((order) => <p><span>{shortPartyName(order.first)} zuerst</span><strong>{shortPartyName(stableWinner)} {selectedFor(order, stableWinner)} · {shortPartyName(stableLoser)} {selectedFor(order, stableLoser)}</strong></p>)}</div>
+    <p class="summary">Unabhängig von der Reihenfolge wurde in allen {stable.totals[stableWinner] + stable.totals[stableLoser]} Entscheidungen {shortPartyName(stableWinner)} ausgewählt.</p>
+    <p class="observation">Reihenfolgeeffekt: <strong>{stable.sensitivityPercentagePoints.toLocaleString('de-DE')} Prozentpunkte</strong></p>
+  </article>
+  <article>
+    <p class="contrast-label">Eine instabile beobachtete Präferenz</p>
+    <h3>{shortPartyName(sensitiveA)} ↔ {shortPartyName(sensitiveB)}</h3>
+    <dl class="total"><div><dt>{shortPartyName(sensitiveA)}</dt><dd>{sensitive.totals[sensitiveA]}</dd></div><div><dt>{shortPartyName(sensitiveB)}</dt><dd>{sensitive.totals[sensitiveB]}</dd></div></dl>
+    <div class="orders">{sensitive.orders.map((order) => <p><span>{shortPartyName(order.first)} zuerst</span><strong>{shortPartyName(order.first)} {order.firstSelected} · {shortPartyName(order.second)} {order.secondSelected}</strong></p>)}</div>
+    <p class="summary">Hier ging das Vertauschen der beiden Namen mit einer drastisch veränderten Auswahlverteilung einher.</p>
+    <p class="observation">Reihenfolgeeffekt: <strong>{sensitive.sensitivityPercentagePoints.toLocaleString('de-DE')} Prozentpunkte</strong></p>
+  </article>
+</div>
+<style>
+  .hypothesis-contrast{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(1.5rem,4vw,3rem);margin-top:4rem}.hypothesis-contrast article{padding-block:1.5rem;border-top:2px solid var(--ink)}.contrast-label{color:var(--muted);font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.hypothesis-contrast h3{margin-top:.6rem;font-size:clamp(1.35rem,3vw,2rem)}.total{display:flex;gap:clamp(1.5rem,5vw,3rem);margin-block:2rem}.total div{display:flex;flex-direction:column}.total dt{order:2;margin-top:.45rem;color:var(--muted);font-size:.85rem;font-weight:700;letter-spacing:0}.total dd{margin:0;font-size:clamp(3.5rem,8vw,6rem);font-weight:750;line-height:.8;letter-spacing:-.06em}.orders{border-top:1px solid var(--line)}.orders p{display:flex;justify-content:space-between;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--line);font-size:.83rem}.orders span{color:var(--muted)}.orders strong{text-align:right}.summary{margin-top:1.5rem;color:var(--muted);font-size:.9rem}.observation{margin-top:1rem}.observation strong{display:block;margin-top:.2rem;font-size:1.15rem}
+  @media(max-width:700px){.hypothesis-contrast{grid-template-columns:1fr}.total dd{font-size:clamp(4rem,20vw,6rem)}}@media(max-width:430px){.orders p{align-items:flex-start;flex-direction:column;gap:.2rem}.orders strong{text-align:left}}
+</style>

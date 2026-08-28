@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialOrderEffects from '../components/EditorialOrderEffects.astro';
+import EditorialRanking from '../components/EditorialRanking.astro';
+import OrderReveal from '../components/OrderReveal.astro';
+import PreferenceHypothesis from '../components/PreferenceHypothesis.astro';
+import PromptExcerpt from '../components/PromptExcerpt.astro';
+import RankingExtreme from '../components/RankingExtreme.astro';
+import { experiment } from '../data/experiments/gpt56-main-v2';
+import { formatInteger, formatPercent } from '../lib/format';
+import { getPair } from '../lib/experiments';
+import { getPartySummary } from '../lib/party-results';
+
+const ranking = experiment.results.ranking;
+const firstRanked = ranking[0]!;
+const lastRanked = ranking.at(-1)!;
+const topThree = ranking.slice(0, 3);
+const expectedTopThree = ['Volt', 'Bündnis 90/Die Grünen', 'ÖDP'];
+if (!expectedTopThree.every((party, index) => topThree[index]?.party === party)) {
+  throw new Error('Die redaktionelle Einordnung der drei führenden Parteien passt nicht zur Rangliste.');
+}
+const firstSummary = getPartySummary(firstRanked.party);
+const lastSummary = getPartySummary(lastRanked.party);
+const surprise = getPair('Bündnis 90/Die Grünen', 'ÖDP')!;
+const promptExample = experiment.prompt.variants.find(
+  (variant) => variant.firstParty === 'Bündnis 90/Die Grünen' && variant.secondParty === 'ÖDP',
+);
+if (!promptExample) throw new Error('Der Beispielprompt Grüne/ÖDP fehlt im Experimentmanifest.');
+const stableExample = getPair('Volt', 'CDU/CSU')!;
+const strongestEffects = [...experiment.results.pairs]
+  .sort((a, b) => b.sensitivityPercentagePoints - a.sensitivityPercentagePoints)
+  .slice(0, 5);
+const opponentsPerParty = experiment.parties.length - 1;
+const decisionsPerParty = firstRanked.decisions;
+---
+<BaseLayout title="KI-Wahltest" description="9.000 dokumentierte Entscheidungen von GPT-5.6 Sol zwischen zehn deutschen Parteien – mit Rangliste, direkten Duellen und Rohdaten.">
+  <section class="story-hero">
+    <div class="container hero-copy">
+      <p class="story-kicker">KI-Wahltest</p>
+      <h1>Welche Partei bevorzugt eine KI?</h1>
+      <p class="hero-lede">Wir haben {experiment.model.name} {formatInteger(experiment.parameters.totalRequests)}-mal zwischen jeweils zwei deutschen Parteien entscheiden lassen.</p>
+      <p class="hero-facts">{experiment.parties.length} Parteien <i>·</i> {experiment.results.pairs.length} Duelle <i>·</i> {formatInteger(experiment.parameters.totalRequests)} Entscheidungen</p>
+      <p class="independent-note">Ein unabhängiges, vollständig dokumentiertes Experiment.</p>
+    </div>
+  </section>
+
+  <section class="section section--surface ranking-story">
+    <div class="container">
+      <p class="story-question">Und wie hat das Modell entschieden?</p>
+      <h2>Welche Parteien wurden am häufigsten ausgewählt?</h2>
+      <p class="lede">Jede Partei trat gegen jede der {opponentsPerParty} anderen Parteien an – jeweils {experiment.parameters.runsPerOrder}-mal in beiden möglichen Reihenfolgen. Damit war jede Partei an insgesamt {formatInteger(decisionsPerParty)} Entscheidungen beteiligt.</p>
+      <PromptExcerpt variant={promptExample} experimentId={experiment.id} runsPerOrder={experiment.parameters.runsPerOrder} />
+      <EditorialRanking ranking={ranking} />
+      <div class="ranking-observation">
+        <p><strong>Auffällig ist die starke Position ökologisch ausgerichteter Parteien:</strong> {topThree[0]!.party}, {topThree[1]!.party} und {topThree[2]!.party} bilden unter den Bedingungen dieses Experiments die drei am häufigsten ausgewählten Parteien.</p>
+        <p><strong>Daraus lässt sich allerdings nicht ableiten, warum das Modell diese Parteien häufiger auswählte.</strong> Das Experiment untersucht die Entscheidungen zwischen Parteien als Ganzes. Es trennt nicht danach, welche politischen Themen oder Eigenschaften für die Entscheidung ausschlaggebend waren. Ob beispielsweise Klima- und Umweltpolitik, Europapolitik, gesellschaftspolitische Positionen oder andere Merkmale für diese Ergebnisse verantwortlich sind, wurde nicht untersucht.</p>
+      </div>
+      <div class="number-explanation">
+        <h3>Was bedeutet {formatPercent(firstRanked.share)}?</h3>
+        <p>{firstRanked.party} wurde in {formatInteger(firstRanked.selected)} von {formatInteger(firstRanked.decisions)} Einzelentscheidungen ausgewählt, an denen {firstRanked.party} beteiligt war.</p>
+        <strong>Das sind keine Umfragewerte.</strong>
+        <p>Die Prozentzahlen beschreiben ausschließlich, wie {experiment.model.name} unter den Bedingungen dieses Experiments entschieden hat.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="turning-point">
+    <div class="container">
+      <p class="story-question">Dann haben wir die Reihenfolge vertauscht.</p>
+      <h2>Aber so eindeutig ist das Ergebnis nicht.</h2>
+      <div class="not-changed"><p>Nicht die Versuchsanweisung.</p><p>Nicht das Modell.</p><p>Nicht die Parteien.</p><strong>Die beiden Parteinamen standen lediglich in umgekehrter Reihenfolge.</strong></div>
+      <OrderReveal pair={surprise} modelName={experiment.model.name} />
+      <p class="detail-link"><a href={`/duelle/${surprise.id}/`}>Dieses Duell vollständig untersuchen →</a></p>
+    </div>
+  </section>
+
+  <section class="section section--surface more-effects">
+    <div class="container">
+      <p class="story-question">War das ein Einzelfall?</p>
+      <h2>Nein.</h2>
+      <p class="lede">Das waren die fünf stärksten beobachteten Unterschiede zwischen den beiden Reihenfolgen.</p>
+      <EditorialOrderEffects pairs={strongestEffects} />
+      <div class="average-note"><strong>{formatPercent(experiment.results.positionBias.secondShare, 0)}</strong><p>Über alle {formatInteger(experiment.parameters.totalRequests)} Entscheidungen hinweg wurde die zweitgenannte Partei in rund {formatPercent(experiment.results.positionBias.secondShare, 0)} der Fälle ausgewählt.</p><p>Dieser Durchschnitt verdeckt jedoch, wie stark sich die Ergebnisse einzelner Duelle zwischen den beiden Reihenfolgen unterschieden.</p></div>
+      <p class="detail-link"><a href="/duelle/">Alle {experiment.results.pairs.length} Duelle untersuchen →</a></p>
+    </div>
+  </section>
+
+  <section class="extremes">
+    <div class="container">
+      <p class="story-question">Zurück zur Rangliste</p>
+      <h2>Die beiden Enden der Rangliste</h2>
+      <p class="lede">Beide Parteien werden nach derselben Logik gezeigt: beobachtete Häufigkeit, alle neun direkten Duelle und dieselbe methodische Einordnung.</p>
+      <RankingExtreme summary={lastSummary} />
+      <RankingExtreme summary={firstSummary} />
+    </div>
+  </section>
+
+  <section class="evidence">
+    <div class="container">
+      <p class="story-question">Kann man das überprüfen?</p>
+      <h2>Ja.<br />Jede einzelne Entscheidung.</h2>
+      <dl class="evidence-numbers">
+        <div><dd>{formatInteger(experiment.parameters.totalRequests)}</dd><dt>erfolgreiche Originalantworten</dt></div>
+        <div><dd>{formatInteger(experiment.parameters.totalRequests)}</dd><dt>vorab festgelegte Aufgaben</dt></div>
+        <div><dd>{experiment.prompt.variants.length}</dd><dt>Reihenfolge-Bedingungen</dt></div>
+        <div><dd>{experiment.results.pairs.length}</dd><dt>Parteiduelle</dt></div>
+      </dl>
+      <div class="evidence-copy"><p>Die Aufgaben wurden vor Beginn des Experiments erzeugt, deterministisch gemischt und in einer festen Reihenfolge gespeichert.</p><p>Während des Laufs wurden die Prompts nicht aufgrund beobachteter Ergebnisse verändert.</p></div>
+      <nav class="evidence-links" aria-label="Nachweise"><a href="/daten/">Originaldaten</a><a href={`/experimente/${experiment.id}/`}>Prompts und Parameter</a><a href="/methodik/">Methodik</a><a href="https://github.com/aurisch/ki-wahltest.de">Quellcode</a></nav>
+    </div>
+  </section>
+
+  <section class="interpretation">
+    <div class="container interpretation-copy">
+      <p class="story-question">Eine mögliche Auflösung</p>
+      <h2>Warum kann die Reihenfolge überhaupt so wichtig werden?</h2>
+      <p class="hypothesis-lede"><strong>Eine mögliche Erklärung:</strong> Je weniger eindeutig die Wahl für das Modell ist, desto wichtiger können Nebensächlichkeiten werden.</p>
+      <p>Bei manchen Parteienpaaren zeigt {experiment.model.name} in den ausgegebenen Entscheidungen eine sehr deutliche Präferenz. Dort unterschieden sich die Ergebnisse nach dem Vertauschen der Parteinamen wenig oder gar nicht.</p>
+      <p>Bei anderen Paaren scheint die Entscheidung für das Modell weniger eindeutig zu sein. Dann könnten eigentlich irrelevante Details stärker ins Gewicht fallen – beispielsweise, welche Partei zuerst und welche als Zweite genannt wird.</p>
+      <PreferenceHypothesis stable={stableExample} sensitive={surprise} />
+      <div class="hypothesis-caveat"><strong>Eine plausible Erklärung – kein Beweis</strong><p>Aus den ausgegebenen Antworten können wir nicht direkt beobachten, wie das Modell intern zu seiner Entscheidung gelangt.</p><p>Die Ergebnisse passen jedoch zu der Erklärung, dass eigentlich irrelevante Merkmale wie die Position im Prompt besonders dann Einfluss gewinnen können, wenn die Entscheidung zwischen zwei Alternativen für das Modell nicht eindeutig ist.</p></div>
+    </div>
+  </section>
+
+  <section class="final-answer">
+    <div class="container answer-copy">
+      <h2>Welche Partei „bevorzugt“ eine KI also?</h2>
+      <p>Unter festen Versuchsbedingungen zeigte {experiment.model.name} durchaus sehr deutliche Präferenzen zwischen manchen Parteien.</p>
+      <p>Diese Präferenzen waren jedoch nicht in allen Duellen gleich stabil. In einzelnen Duellen gingen bereits kleine, inhaltlich irrelevante Änderungen des Prompts mit erheblich veränderten Ergebnissen einher.</p>
+      <p>Deshalb lässt sich die Frage nach der politischen „Präferenz“ einer KI nicht vollständig vom Versuchsaufbau trennen.</p>
+      <p class="final-statement">Nicht nur was man eine KI fragt, kann eine Rolle spielen.<br /><strong>Sondern auch, wie man es fragt.</strong></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .story-hero{display:flex;align-items:center;min-height:clamp(36rem,78vh,52rem);padding-block:5rem}.hero-copy{max-width:64rem}.story-kicker,.story-question{margin-bottom:1rem;color:var(--teal);font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.hero-copy h1{max-width:14ch;font-size:clamp(3.5rem,9vw,7.8rem)}.hero-lede{max-width:43rem;margin-top:2rem;font-size:clamp(1.2rem,2.4vw,1.75rem);line-height:1.45}.hero-facts{margin-top:2.2rem;font-size:clamp(1rem,2vw,1.25rem);font-weight:750}.hero-facts i{padding-inline:.45rem;color:var(--line-strong);font-style:normal}.independent-note{margin-top:1rem;color:var(--muted);font-size:.88rem}.ranking-story h2,.turning-point h2,.more-effects h2,.extremes h2,.evidence h2,.interpretation h2,.final-answer h2{max-width:18ch}.ranking-observation{max-width:58rem;margin-top:4rem;padding-block:1.5rem;border-block:1px solid var(--line)}.ranking-observation p{font-size:1.08rem}.ranking-observation p+p{margin-top:1rem;color:var(--muted)}.ranking-observation strong{color:var(--ink)}.number-explanation{max-width:52rem;margin-top:4rem;padding-top:2rem;border-top:2px solid var(--ink)}.number-explanation h3{font-size:clamp(1.8rem,4vw,3rem)}.number-explanation p{margin-top:1rem;font-size:1.08rem}.number-explanation strong{display:block;margin-top:2rem;font-size:1.25rem}.turning-point{padding-block:clamp(5rem,11vw,10rem);overflow:hidden}.not-changed{max-width:42rem;margin-top:3rem;font-size:clamp(1.2rem,2.6vw,1.8rem);line-height:1.5}.not-changed p{text-decoration:line-through;text-decoration-color:var(--line-strong)}.not-changed strong{display:block;margin-top:1.2rem}.detail-link{margin-top:2rem}.detail-link a{font-weight:750}.average-note{display:grid;grid-template-columns:auto 1fr;gap:.4rem 2rem;max-width:58rem;margin-top:4rem;padding-top:2rem;border-top:2px solid var(--ink)}.average-note strong{grid-row:1/3;font-size:clamp(4rem,10vw,7rem);line-height:.8;letter-spacing:-.07em}.average-note p{margin:0}.average-note p:last-child{color:var(--muted)}.extremes{padding-block:clamp(5rem,10vw,9rem)}.evidence{padding-block:clamp(5rem,10vw,9rem);color:var(--paper);background:var(--ink)}.evidence .story-question{color:#8fd0c7}.evidence h2{font-size:clamp(3rem,8vw,6.5rem)}.evidence-numbers{display:grid;grid-template-columns:repeat(4,1fr);margin:4rem 0 0}.evidence-numbers div{padding:1rem;border-top:1px solid #65736f;border-right:1px solid #41504d}.evidence-numbers div:first-child{padding-left:0}.evidence-numbers div:last-child{border-right:0}.evidence-numbers dd{margin:0;font-size:clamp(2.5rem,6vw,5rem);font-weight:750;line-height:1;letter-spacing:-.06em}.evidence-numbers dt{margin-top:.65rem;color:#bac6c2;font-size:.84rem}.evidence-copy{display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;max-width:60rem;margin-top:4rem;color:#c9d1ce}.evidence-links{display:flex;flex-wrap:wrap;gap:1rem 2rem;margin-top:3rem;padding-top:1.5rem;border-top:1px solid #41504d}.evidence-links a{color:#fff;font-weight:700}.interpretation,.final-answer{padding-block:clamp(6rem,13vw,12rem)}.interpretation-copy,.answer-copy{max-width:62rem}.interpretation h2,.final-answer h2{font-size:clamp(2.4rem,6vw,5rem)}.interpretation{background:var(--surface)}.interpretation-copy>p{max-width:48rem;margin-top:1.2rem;font-size:1.08rem}.hypothesis-lede{margin-block:2.5rem!important;font-size:clamp(1.35rem,3vw,2rem)!important;line-height:1.35}.hypothesis-lede strong{color:var(--teal)}.hypothesis-caveat{max-width:52rem;margin-top:4rem;padding:1.3rem 0 1.3rem 1.4rem;border-left:.3rem solid var(--amber)}.hypothesis-caveat strong{font-size:1.2rem}.hypothesis-caveat p{margin-top:.7rem;color:var(--muted)}.answer-copy>p{max-width:48rem;margin-top:1.2rem;font-size:1.08rem}.final-statement{max-width:none!important;margin-top:clamp(4rem,9vw,8rem)!important;font-size:clamp(1.9rem,5vw,4rem)!important;font-weight:650;line-height:1.2!important;letter-spacing:-.035em}.final-statement strong{display:block;margin-top:.35rem;color:var(--teal)}
+  @media(max-width:720px){.story-hero{min-height:auto;padding-block:5rem}.hero-copy h1{font-size:clamp(3.4rem,16vw,5.7rem)}.average-note{grid-template-columns:1fr}.average-note strong{grid-row:auto}.evidence-numbers{grid-template-columns:1fr}.evidence-numbers div,.evidence-numbers div:first-child{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:1rem 0;border-right:0;border-bottom:1px solid #41504d}.evidence-numbers dt{max-width:12rem;text-align:right}.evidence-copy{grid-template-columns:1fr}.evidence h2{font-size:clamp(3rem,14vw,5rem)}}
+</style>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ki-wahltest.de/sitemap-index.xml

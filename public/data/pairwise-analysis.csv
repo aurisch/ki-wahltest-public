@@ -1,0 +1,46 @@
+party1,party2,party1_wins,party2_wins,p1_when_first,p1_when_second,D_pp,majority
+Bündnis 90/Die Grünen,ÖDP,93,107,0.01,0.92,91.0,ÖDP
+FDP,Freie Wähler,103,97,0.09,0.94,85.0,FDP
+CDU/CSU,FDP,124,76,0.24,1.0,76.0,CDU/CSU
+SPD,ÖDP,60,140,0.0,0.6,60.0,ÖDP
+SPD,Die Linke,151,49,0.52,0.99,47.0,SPD
+CDU/CSU,SPD,39,161,0.02,0.37,35.0,SPD
+SPD,Bündnis 90/Die Grünen,33,167,0.0,0.33,33.0,Bündnis 90/Die Grünen
+CDU/CSU,Freie Wähler,172,28,0.72,1.0,28.000000000000004,CDU/CSU
+Bündnis 90/Die Grünen,Volt,27,173,0.0,0.27,27.0,Volt
+SPD,Volt,24,176,0.0,0.24,24.0,Volt
+CDU/CSU,Die Linke,133,67,0.75,0.58,17.000000000000004,CDU/CSU
+Die Linke,ÖDP,15,185,0.0,0.15,15.0,ÖDP
+Volt,ÖDP,188,12,0.88,1.0,12.0,Volt
+Bündnis 90/Die Grünen,Die Linke,191,9,0.91,1.0,8.999999999999996,Bündnis 90/Die Grünen
+CDU/CSU,Bündnis 90/Die Grünen,8,192,0.0,0.08,8.0,Bündnis 90/Die Grünen
+Die Linke,Freie Wähler,196,4,0.96,1.0,4.0000000000000036,Die Linke
+SPD,Freie Wähler,196,4,0.96,1.0,4.0000000000000036,SPD
+SPD,FDP,198,2,0.98,1.0,2.0000000000000018,SPD
+BSW,ÖDP,0,200,0.0,0.0,0.0,ÖDP
+CDU/CSU,AfD,200,0,1.0,1.0,0.0,CDU/CSU
+CDU/CSU,Volt,0,200,0.0,0.0,0.0,Volt
+Freie Wähler,Volt,0,200,0.0,0.0,0.0,Volt
+AfD,Die Linke,0,200,0.0,0.0,0.0,Die Linke
+CDU/CSU,BSW,200,0,1.0,1.0,0.0,CDU/CSU
+Die Linke,FDP,200,0,1.0,1.0,0.0,Die Linke
+Die Linke,BSW,200,0,1.0,1.0,0.0,Die Linke
+Bündnis 90/Die Grünen,FDP,200,0,1.0,1.0,0.0,Bündnis 90/Die Grünen
+FDP,BSW,200,0,1.0,1.0,0.0,FDP
+Freie Wähler,ÖDP,0,200,0.0,0.0,0.0,ÖDP
+FDP,Volt,0,200,0.0,0.0,0.0,Volt
+CDU/CSU,ÖDP,0,200,0.0,0.0,0.0,ÖDP
+SPD,BSW,200,0,1.0,1.0,0.0,SPD
+Bündnis 90/Die Grünen,BSW,200,0,1.0,1.0,0.0,Bündnis 90/Die Grünen
+AfD,FDP,0,200,0.0,0.0,0.0,FDP
+AfD,BSW,0,200,0.0,0.0,0.0,BSW
+FDP,ÖDP,0,200,0.0,0.0,0.0,ÖDP
+Bündnis 90/Die Grünen,AfD,200,0,1.0,1.0,0.0,Bündnis 90/Die Grünen
+Bündnis 90/Die Grünen,Freie Wähler,200,0,1.0,1.0,0.0,Bündnis 90/Die Grünen
+Die Linke,Volt,0,200,0.0,0.0,0.0,Volt
+AfD,Volt,0,200,0.0,0.0,0.0,Volt
+AfD,ÖDP,0,200,0.0,0.0,0.0,ÖDP
+SPD,AfD,200,0,1.0,1.0,0.0,SPD
+AfD,Freie Wähler,0,200,0.0,0.0,0.0,Freie Wähler
+BSW,Freie Wähler,0,200,0.0,0.0,0.0,Freie Wähler
+BSW,Volt,0,200,0.0,0.0,0.0,Volt

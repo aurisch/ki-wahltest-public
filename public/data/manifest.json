@@ -1,0 +1,12 @@
+{
+  "experimentId": "gpt-5.6-sol-main-v2",
+  "primarySourceBase": "experiments/gpt-5.6-sol-main-v2/",
+  "files": [
+    { "path": "experiments/gpt-5.6-sol-main-v2/manifest.json", "kind": "primary", "available": true },
+    { "path": "experiments/gpt-5.6-sol-main-v2/jobs.jsonl", "kind": "primary", "available": true },
+    { "path": "experiments/gpt-5.6-sol-main-v2/results.jsonl", "kind": "primary", "available": true },
+    { "path": "website-data.json", "kind": "derived", "available": true },
+    { "path": "pairwise-analysis.csv", "kind": "derived", "available": true },
+    { "path": "analysis-report.md", "kind": "derived", "available": true }
+  ]
+}

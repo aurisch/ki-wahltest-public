@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Methodik" description="Versuchsdesign, Randomisierung und Reproduzierbarkeit des KI-Wahltests."><article class="page"><div class="container prose">
+  <p class="eyebrow">Methodik</p><h1>Kontrollierte Paarvergleiche</h1><p class="lede">Jede Entscheidung wurde isoliert abgefragt. Systematisch variiert wurden das Parteienpaar und die Reihenfolge der beiden Parteinamen; die übrige Versuchsanweisung blieb gleich.</p>
+  <h2>Versuchsdesign</h2><p>Untersucht wurden zehn vorab festgelegte Parteibezeichnungen. Die Auswahl erhebt keinen Anspruch auf Vollständigkeit. CDU und CSU wurden für dieses Experiment unter der gemeinsamen Bezeichnung <strong>CDU/CSU</strong> zusammengefasst.</p><p>Zehn Parteibezeichnungen ergeben <strong>10 × 9 / 2 = 45</strong> eindeutige Paarungen. Jede Paarung wurde in beiden Reihenfolgen gezeigt. Die 90 Bedingungen wurden je 100-mal wiederholt: insgesamt <strong>9.000 Entscheidungen</strong>.</p>
+  <h2>Randomisierung</h2><p>Die Jobs wurden vor der Ausführung mit dem Seed <code>20260902</code> deterministisch gemischt. Anschließend wurde die Jobliste eingefroren.</p>
+  <h2>Zustandslose Anfragen</h2><p>Jede Anfrage war zustandslos. Zwischen den Requests wurde kein Gesprächskontext und kein vorheriger Response weitergegeben.</p><pre class="mono-box"><code>model: gpt-5.6-sol
+reasoningEffort: none
+temperature: 1
+maxOutputTokens: 64
+store: false
+previousResponseId: null
+conversation: null</code></pre>
+  <h2>Strikte Ausgabe</h2><p>Das Modell sollte exakt eine der beiden angebotenen Parteibezeichnungen zurückgeben – ohne Begründung oder freie Interpretation. Da die Reihenfolge Teil des Wortlauts ist, dokumentiert das Manifest alle 90 Prompttexte und ihre jeweiligen SHA-256-Hashes.</p>
+  <h2>Promptkonfiguration</h2><dl class="meta-list"><dt>Methode</dt><dd><code>explicit-permutation-invariance</code></dd><dt>Revision</dt><dd><code>no-election-advice-exact-party-name-v1</code></dd><dt>Bedingungen</dt><dd>45 Paare × 2 Reihenfolgen × 100 Wiederholungen</dd><dt>Erfolgreiche Entscheidungen</dt><dd>9.000</dd></dl>
+  <h2>Reproduzierbarkeit des Versuchsaufbaus</h2><p>Manifest, eingefrorene Jobliste und vollständiges Ergebnisprotokoll sind als maßgebliche Primärquellen öffentlich verfügbar. Die Jobs wurden mit Seed <code>20260902</code> vorab erzeugt. Prüfsummen sichern die unveränderten Dateien; Website- und Analysedaten sind daraus abgeleitete Darstellungen.</p><p>Versuchsaufbau, Prompt, Parameter, Jobliste und Auswertungsverfahren sind damit dokumentiert und wiederholbar. Das extern betriebene Sprachmodell arbeitet probabilistisch; eine erneute Ausführung muss deshalb nicht dieselben Einzelantworten erzeugen.</p><p><a href="/daten/">Primärdaten und Prüfsummen öffnen →</a></p>
+  <h2>Wie sind die Quoten zu lesen?</h2><p>Eine Auswahlquote ist der Anteil der paarweisen Entscheidungen, in denen eine Partei unter diesen Experimentbedingungen ausgewählt wurde. Sie ist weder Wahlumfrage noch prognostizierter Stimmenanteil oder politische Zustimmung.</p>
+</div></article></BaseLayout>

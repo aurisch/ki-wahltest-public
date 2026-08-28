@@ -1,0 +1,12 @@
+---
+import { shortPartyName } from '../lib/parties';
+import type { PairResult } from '../lib/types';
+const { pairs } = Astro.props as { pairs: PairResult[] };
+---
+<div class="effect-list">
+  {pairs.map((pair) => <a href={`/duelle/${pair.id}/`}><span>{shortPartyName(pair.parties[0])} <i>↔</i> {shortPartyName(pair.parties[1])}</span><strong>{pair.sensitivityPercentagePoints.toLocaleString('de-DE')} <small>Prozentpunkte</small></strong></a>)}
+</div>
+<style>
+  .effect-list{margin-top:2rem;border-top:1px solid var(--line-strong)}.effect-list a{display:flex;align-items:baseline;justify-content:space-between;gap:1.5rem;padding:1.2rem 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}.effect-list a:hover span{text-decoration:underline}.effect-list span{font-size:clamp(1rem,2vw,1.3rem);font-weight:700}.effect-list i{padding-inline:.35rem;color:var(--muted);font-style:normal}.effect-list strong{font-size:clamp(1.5rem,3vw,2.4rem);font-variant-numeric:tabular-nums;white-space:nowrap}.effect-list small{font-size:.7rem;font-weight:650}
+  @media(max-width:560px){.effect-list a{align-items:flex-start;flex-direction:column;gap:.3rem}.effect-list small{font-size:.72rem}}
+</style>

@@ -1,0 +1,16 @@
+---
+import { shortPartyName } from '../lib/parties';
+import type { PairResult } from '../lib/types';
+const { pairs } = Astro.props as { pairs: PairResult[] };
+---
+<div class="effect-cards">
+  {pairs.map((pair) => <a href={`/duelle/${pair.id}/`}>
+    <span>{shortPartyName(pair.parties[0])} / {shortPartyName(pair.parties[1])}</span>
+    <strong>{pair.sensitivityPercentagePoints.toLocaleString('de-DE')}<small>Prozentpunkte</small></strong>
+    <i aria-hidden="true">→</i>
+  </a>)}
+</div>
+<style>
+  .effect-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem}.effect-cards a{display:grid;grid-template-rows:auto 1fr auto;min-height:12rem;padding:1.2rem;border-top:2px solid var(--ink);color:var(--ink);text-decoration:none}.effect-cards a:hover{background:var(--surface-soft)}.effect-cards span{font-weight:700}.effect-cards strong{align-self:end;font-size:clamp(2.2rem,5vw,4rem);line-height:1;letter-spacing:-.05em}.effect-cards small{display:block;margin-top:.35rem;color:var(--muted);font-size:.72rem;font-weight:650;letter-spacing:0}.effect-cards i{justify-self:end;margin-top:1rem;font-style:normal}
+  @media(max-width:820px){.effect-cards{grid-template-columns:repeat(2,1fr)}}@media(max-width:480px){.effect-cards{grid-template-columns:1fr}.effect-cards a{min-height:9rem}}
+</style>

@@ -1,0 +1,19 @@
+---
+import { formatInteger, formatPercent } from '../lib/format';
+import { partySlug } from '../lib/parties';
+import type { PartyResult } from '../lib/types';
+const { ranking } = Astro.props as { ranking: PartyResult[] };
+---
+<ol class="editorial-ranking">
+  {ranking.map((result, index) => <li>
+    <span class="position" aria-label={`Rang ${index + 1}`}>{index + 1}</span>
+    <a href={`/parteien/${partySlug(result.party)}/`}>{result.party}</a>
+    <strong>{formatPercent(result.share)}</strong>
+    <span class="bar" aria-hidden="true"><i style={`width:${result.share * 100}%`}></i></span>
+    <small>{formatInteger(result.selected)} von {formatInteger(result.decisions)}</small>
+  </li>)}
+</ol>
+<style>
+  .editorial-ranking{margin:3rem 0 0;padding:0;list-style:none}.editorial-ranking li{display:grid;grid-template-columns:2rem minmax(13rem,1fr) auto;align-items:end;gap:.35rem 1rem;padding:1.05rem 0;border-bottom:1px solid var(--line)}.position{grid-row:1/4;align-self:center;color:var(--muted);font-variant-numeric:tabular-nums}.editorial-ranking a{color:var(--ink);font-size:clamp(1rem,2vw,1.25rem);font-weight:750;text-decoration:none}.editorial-ranking a:hover{text-decoration:underline}.editorial-ranking strong{font-size:clamp(1.5rem,3vw,2.35rem);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.04em}.bar{grid-column:2/4;height:.72rem;background:var(--surface-soft)}.bar i{display:block;height:100%;background:var(--teal)}.editorial-ranking small{grid-column:2/4;color:var(--muted)}
+  @media(max-width:560px){.editorial-ranking li{grid-template-columns:1.5rem 1fr auto;gap:.4rem .65rem}.editorial-ranking a{max-width:12rem;line-height:1.25}.bar{height:.6rem}}
+</style>

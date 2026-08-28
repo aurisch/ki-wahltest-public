@@ -1,0 +1,17 @@
+---
+import { shortPartyName } from '../lib/parties';
+import type { PairResult } from '../lib/types';
+const { pair, prominent = false } = Astro.props as { pair: PairResult; prominent?: boolean };
+---
+<div class:list={['orders', { 'orders--prominent': prominent }]}>
+  {pair.orders.map((order) => <div class="order">
+    <p class="order-label">Wenn <strong>{shortPartyName(order.first)}</strong> zuerst stand</p>
+    <div class="score" aria-label={`${shortPartyName(order.first)} ${order.firstSelected} zu ${order.secondSelected} ${shortPartyName(order.second)}`}>
+      <span><small>{shortPartyName(order.first)}</small>{order.firstSelected}</span><i>:</i><span><small>{shortPartyName(order.second)}</small>{order.secondSelected}</span>
+    </div>
+  </div>)}
+</div>
+<style>
+  .orders{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:2rem}.order{padding:clamp(1.2rem,3vw,2rem);border:1px solid var(--line);background:var(--surface)}.order-label{color:var(--muted);font-size:.92rem}.score{display:flex;align-items:flex-end;gap:.55rem;margin-top:1.75rem;font-size:clamp(3.2rem,8vw,6.2rem);font-weight:700;line-height:.8;letter-spacing:-.06em}.score span{display:flex;flex-direction:column;min-width:0}.score small{overflow:hidden;max-width:12rem;margin-bottom:.8rem;color:var(--muted);font-size:.78rem;font-weight:650;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}.score i{color:var(--line-strong);font-size:.6em;font-style:normal}.orders--prominent .order{color:#f7f6f2;background:#22302e;border-color:#41504d}.orders--prominent .order-label,.orders--prominent .score small{color:#bac6c2}.orders--prominent .score i{color:#65736f}
+  @media(max-width:700px){.orders{grid-template-columns:1fr}.score{font-size:clamp(3rem,18vw,5rem)}}
+</style>

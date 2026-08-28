@@ -1,0 +1,65 @@
+---
+import type { PromptVariant } from '../lib/types';
+
+const { variant, experimentId, runsPerOrder } = Astro.props as {
+  variant: PromptVariant;
+  experimentId: string;
+  runsPerOrder: number;
+};
+
+const paragraphs = variant.text.split(/\n\n/);
+const excerpt = [paragraphs[0], paragraphs[1], paragraphs[2], paragraphs[4], paragraphs[7]];
+const partyLine = excerpt[2];
+
+if (excerpt.some((paragraph) => !paragraph) || !partyLine) {
+  throw new Error(`Der Prompt für Paar ${variant.pairId} hat nicht die erwartete Absatzstruktur.`);
+}
+
+const firstPartyStart = partyLine.indexOf(variant.firstParty);
+const secondPartyStart = partyLine.indexOf(variant.secondParty, firstPartyStart + variant.firstParty.length);
+
+if (firstPartyStart < 0 || secondPartyStart < 0) {
+  throw new Error(`Die Parteinamen fehlen im Prompt für Paar ${variant.pairId}.`);
+}
+
+const beforeFirstParty = partyLine.slice(0, firstPartyStart);
+const betweenParties = partyLine.slice(firstPartyStart + variant.firstParty.length, secondPartyStart);
+const afterSecondParty = partyLine.slice(secondPartyStart + variant.secondParty.length);
+---
+
+<aside class="prompt-example" aria-labelledby="prompt-example-title">
+  <div class="prompt-introduction">
+    <p class="prompt-label">So haben wir gefragt</p>
+    <h3 id="prompt-example-title">Beispiel: Grüne gegen ÖDP</h3>
+    <p>Die Versuchsanweisung blieb gleich. Je nach Duell wurden die beiden Parteinamen eingesetzt und ihre Reihenfolge vertauscht.</p>
+  </div>
+
+  <blockquote>
+    <p>{excerpt[0]}</p>
+    <p>{excerpt[1]}</p>
+    <p class="party-line">{beforeFirstParty}<strong>{variant.firstParty}</strong>{betweenParties}<strong>{variant.secondParty}</strong>{afterSecondParty}</p>
+    <p>{excerpt[3]}</p>
+    <p>{excerpt[4]}</p>
+  </blockquote>
+
+  <p class="prompt-source"><strong>Prompt zur besseren Lesbarkeit gekürzt.</strong> <a href={`/experimente/${experimentId}/#prompt`}>Vollständigen Original-Prompt und Versuchsparameter ansehen →</a></p>
+  <p class="ranking-origin"><strong>Aus diesen Paarentscheidungen entstand die Rangliste:</strong> Jede Partei trat {runsPerOrder}-mal in jeder Reihenfolge gegen jede andere Partei an.</p>
+</aside>
+
+<style>
+  .prompt-example{max-width:58rem;margin:clamp(2.5rem,6vw,4.5rem) auto clamp(3.5rem,8vw,6rem)}
+  .prompt-introduction{max-width:46rem}
+  .prompt-label{margin-bottom:.55rem;color:var(--teal);font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+  .prompt-introduction h3{font-size:clamp(1.65rem,3.5vw,2.5rem)}
+  .prompt-introduction>p:last-child{margin-top:.9rem;color:var(--muted);font-size:1.02rem}
+  blockquote{margin:2rem 0 0;padding:clamp(1.4rem,4vw,2.5rem);border:1px solid var(--line);border-left:.32rem solid var(--teal);background:var(--paper)}
+  blockquote p{max-width:43rem;margin:0;font-size:clamp(1rem,1.8vw,1.12rem);line-height:1.65}
+  blockquote p+p{margin-top:1.15rem}
+  .party-line{max-width:none!important;margin-block:1.6rem!important;padding-block:1.1rem;border-block:1px solid var(--line);font-size:clamp(1.08rem,2.3vw,1.35rem)!important}
+  .party-line strong{font-weight:800}
+  .prompt-source{margin-top:1rem;color:var(--muted);font-size:.92rem}
+  .prompt-source strong{color:var(--ink)}
+  .prompt-source a{font-weight:700}
+  .ranking-origin{max-width:48rem;margin-top:1.75rem;font-size:1.05rem}
+  @media(max-width:600px){.prompt-example{margin-inline:-.25rem}blockquote{padding:1.25rem}.prompt-source,.ranking-origin{margin-inline:.25rem}}
+</style>

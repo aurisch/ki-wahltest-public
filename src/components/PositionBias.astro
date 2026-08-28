@@ -1,0 +1,13 @@
+---
+import { formatInteger, formatPercent } from '../lib/format';
+import type { PositionBiasResult } from '../lib/types';
+const { result } = Astro.props as { result: PositionBiasResult };
+---
+<div class="bias" aria-label="Auswahl nach Position">
+  <div><span>Erste Position</span><span class="track"><i style={`width:${result.firstSelected / result.total * 100}%`}></i></span><strong>{formatInteger(result.firstSelected)} <small>{formatPercent(result.firstSelected / result.total)}</small></strong></div>
+  <div><span>Zweite Position</span><span class="track"><i style={`width:${result.secondShare * 100}%`}></i></span><strong>{formatInteger(result.secondSelected)} <small>{formatPercent(result.secondShare)}</small></strong></div>
+</div>
+<style>
+  .bias{display:grid;gap:1rem;margin-top:2rem}.bias>div{display:grid;grid-template-columns:9rem 1fr 8rem;align-items:center;gap:1rem}.track{height:1rem;background:var(--surface-soft)}.track i{display:block;height:100%;background:var(--teal)}strong{text-align:right;font-variant-numeric:tabular-nums}small{color:var(--muted);font-weight:500}
+  @media(max-width:560px){.bias>div{grid-template-columns:1fr auto}.track{grid-row:2;grid-column:1/-1}}
+</style>

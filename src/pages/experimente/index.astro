@@ -1,0 +1,8 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { experiments } from '../../lib/experiments';
+---
+<BaseLayout title="Experimente" description="Versionierte und eingefrorene Experimente des KI-Wahltests."><section class="page"><div class="container">
+  <p class="eyebrow">Archiv</p><h1>Experimente</h1><p class="lede">Jeder Eintrag beschreibt einen abgeschlossenen, eingefrorenen Lauf mit eigener Modell-, Prompt- und Parameterkombination.</p>
+  <div class="link-list narrow">{experiments.map((item) => <a href={`/experimente/${item.id}/`}><span>{item.title} <span class="tag">abgeschlossen</span></span><span>{item.parameters.totalRequests.toLocaleString('de-DE')} Entscheidungen</span></a>)}</div>
+</div></section></BaseLayout>

@@ -1,0 +1,27 @@
+{
+  "name": "ki-wahltest.de",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "audit:data": "node scripts/audit-data.mjs",
+    "audit:site": "node scripts/audit-site.mjs",
+    "check:launch": "npm run build && npm run audit:site && node scripts/check-launch.mjs",
+    "validate:data": "npm run audit:data",
+    "prebuild": "npm run audit:data",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.2.9"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
+  }
+}
