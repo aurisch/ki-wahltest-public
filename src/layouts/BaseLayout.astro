@@ -13,8 +13,8 @@ const ogImage = new URL('/og-image.png', Astro.site);
   <meta name="description" content={description} /><link rel="canonical" href={canonical} />
   <meta property="og:type" content="website" /><meta property="og:locale" content="de_DE" /><meta property="og:site_name" content="KI-Wahltest" />
   <meta property="og:title" content={pageTitle} /><meta property="og:description" content={description} /><meta property="og:url" content={canonical} />
-  <meta property="og:image" content={ogImage} /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
-  <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={pageTitle} /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={ogImage} />
+  <meta property="og:image" content={ogImage} /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /><meta property="og:image:alt" content="KI-Wahltest – Ergebnisse aus 9.000 Paarentscheidungen" />
+  <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={pageTitle} /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={ogImage} /><meta name="twitter:image:alt" content="KI-Wahltest – Ergebnisse aus 9.000 Paarentscheidungen" />
   <title>{pageTitle}</title>
 </head><body><a class="skip-link" href="#inhalt">Zum Inhalt springen</a><SiteHeader /><main id="inhalt"><slot /></main><SiteFooter /></body></html>
-<style>.skip-link{position:absolute;z-index:10;top:.5rem;left:.5rem;padding:.6rem .8rem;color:white;background:var(--ink);transform:translateY(-180%)}.skip-link:focus{transform:translateY(0)}</style>
+<style>.skip-link{position:absolute;z-index:30;top:.5rem;left:.5rem;padding:.6rem .8rem;color:white;background:var(--ink);transform:translateY(-180%)}.skip-link:focus{transform:translateY(0)}</style>
