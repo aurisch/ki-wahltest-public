@@ -29,6 +29,7 @@ const requiredHtaccessRules = [
   /RewriteCond\s+%\{HTTPS\}\s+!=on\s+\[OR\]/,
   /RewriteCond\s+%\{HTTP_HOST\}\s+\^www\\\.ki-wahltest\\\.de\$\s+\[NC\]/,
   /RewriteRule\s+\^\s+https:\/\/ki-wahltest\.de%\{REQUEST_URI\}\s+\[L,R=301\]/,
+  /Header\s+always\s+set\s+Strict-Transport-Security\s+"max-age=300"/,
 ];
 for (const rule of requiredHtaccessRules) if (!rule.test(htaccess)) fail(`.htaccess: erwartete HTTPS-/Canonical-Host-Regel fehlt oder wurde verändert (${rule}).`);
 

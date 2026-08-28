@@ -4,3 +4,7 @@ RewriteEngine On
 RewriteCond %{HTTPS} !=on [OR]
 RewriteCond %{HTTP_HOST} ^www\.ki-wahltest\.de$ [NC]
 RewriteRule ^ https://ki-wahltest.de%{REQUEST_URI} [L,R=301]
+
+# HSTS, vorsichtig kurz (5 Minuten) ohne includeSubDomains/preload,
+# damit ein Fehler den Zugriff nicht monatelang blockieren kann.
+Header always set Strict-Transport-Security "max-age=300"
