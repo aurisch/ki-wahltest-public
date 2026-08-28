@@ -43,7 +43,7 @@ src/
   components/       wiederverwendbare Daten- und Layoutdarstellungen
   data/experiments/ typisierte Experimentdefinitionen
   layouts/          gemeinsamer HTML-Rahmen und SEO-Metadaten
-  lib/              Typen, Slugs, Formate, Suche und Validierung
+  lib/              Typen, Slugs, Formate und Validierung
   pages/            statisch erzeugte Seiten und dynamische Duell-/Parteirouten
   styles/           globales CSS
 public/
