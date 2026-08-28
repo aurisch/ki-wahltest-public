@@ -19,9 +19,18 @@ if (!existsSync(dist)) fail('dist fehlt; zuerst npm run build ausführen.');
 const files = htmlFiles(dist);
 const required = [
   'index.html', 'ergebnisse/index.html', 'experimente/gpt-5.6-sol-main-v2/index.html', 'methodik/index.html',
-  'daten/index.html', 'ueber/index.html', 'impressum/index.html', 'datenschutz/index.html', 'sitemap-index.xml', 'robots.txt',
+  'daten/index.html', 'ueber/index.html', 'impressum/index.html', 'datenschutz/index.html', 'sitemap-index.xml', 'robots.txt', '.htaccess',
 ];
 for (const path of required) if (!existsSync(join(dist, path))) fail(`Pflichtdatei fehlt: ${path}`);
+
+const htaccess = readFileSync(join(dist, '.htaccess'), 'utf8');
+const requiredHtaccessRules = [
+  /RewriteEngine\s+On/,
+  /RewriteCond\s+%\{HTTPS\}\s+!=on\s+\[OR\]/,
+  /RewriteCond\s+%\{HTTP_HOST\}\s+\^www\\\.ki-wahltest\\\.de\$\s+\[NC\]/,
+  /RewriteRule\s+\^\s+https:\/\/ki-wahltest\.de%\{REQUEST_URI\}\s+\[L,R=301\]/,
+];
+for (const rule of requiredHtaccessRules) if (!rule.test(htaccess)) fail(`.htaccess: erwartete HTTPS-/Canonical-Host-Regel fehlt oder wurde verändert (${rule}).`);
 
 const partyPages = files.filter((path) => path.includes('/parteien/') && path.endsWith('/index.html') && !path.endsWith('/parteien/index.html'));
 const duelPages = files.filter((path) => path.includes('/duelle/') && path.endsWith('/index.html') && !path.endsWith('/duelle/index.html'));
