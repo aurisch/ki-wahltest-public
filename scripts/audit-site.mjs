@@ -40,16 +40,29 @@ if (duelPages.length !== 45) fail(`${duelPages.length} statt 45 Duellseiten.`);
 
 let checkedLinks = 0;
 const allowedLegalScript = 'https://www.it-recht-kanzlei.de/js/itrk-legaltext.js';
+const plausibleScript = 'https://plausible.io/js/pa-I7KS-yf-TXWUMJbWuirfC.js';
+const allowedGlobalScripts = new Set([plausibleScript]);
 const allowedLegalTexts = new Map([
   ['/impressum/index.html', 'https://itrk.legal/1C35.0.1bmo-de-iframe.html'],
   ['/datenschutz/index.html', 'https://itrk.legal/1C35.by.1bmo-iframe.html'],
 ]);
+// Erkennt gängige Drittanbieter-Analytics/-Tracking-Snippets, auch wenn sie
+// ohne externes <script src> (z.B. inline gtag/fbq-Aufrufe) eingebunden sind.
+// Plausible selbst ist bewusst ausgenommen.
+const secondAnalyticsPatterns = [
+  /google-analytics\.com/i, /googletagmanager\.com/i, /gtag\(/i, /\bfbq\(/i,
+  /hotjar/i, /matomo/i, /\b_paq\b/i, /clarity\.ms/i, /mixpanel/i,
+  /segment\.(?:io|com)/i, /umami/i, /fathom(?:analytics)?\.com/i, /piwik/i,
+];
 const legalScriptsFound = new Set();
+const plausibleFound = new Set();
 for (const file of files) {
   const html = readFileSync(file, 'utf8');
   for (const marker of ['<meta name="description"', '<link rel="canonical"', '<meta property="og:title"', '<meta property="og:description"', '<meta property="og:url"', '<meta name="twitter:card"']) {
     if (!html.includes(marker)) fail(`${file}: SEO-Metadatum fehlt: ${marker}`);
   }
+  if (html.includes(`src="${plausibleScript}"`)) plausibleFound.add(file);
+  for (const pattern of secondAnalyticsPatterns) if (pattern.test(html)) fail(`${file}: zweite Analytics-/Tracking-Lösung erkannt (${pattern}).`);
   const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
   for (const href of hrefs) {
     if (/^(https?:|mailto:|tel:)/.test(href)) continue;
@@ -69,6 +82,7 @@ for (const file of files) {
     ...[...html.matchAll(/<link[^>]+rel="(?:stylesheet|preload|modulepreload|icon)"[^>]+href="(https?:\/\/[^\"]+)"/gi)].map((match) => match[1]),
   ];
   for (const resource of externalResources) {
+    if (allowedGlobalScripts.has(resource)) continue;
     const legalPage = [...allowedLegalTexts.keys()].find((path) => file.endsWith(path));
     const isLegalScript = legalPage && resource === allowedLegalScript;
     if (!isLegalScript) fail(`${file}: nicht freigegebene externe Ressource ${resource}.`);
@@ -81,6 +95,7 @@ for (const file of files) {
 for (const css of readdirSync(join(dist, '_astro')).filter((name) => name.endsWith('.css'))) {
   if (/url\(["']?https?:\/\//i.test(readFileSync(join(dist, '_astro', css), 'utf8'))) fail(`${css}: externe CSS-Ressource wird geladen.`);
 }
+if (plausibleFound.size !== files.length) fail(`Plausible-Skript fehlt auf ${files.length - plausibleFound.size} von ${files.length} Seite(n).`);
 
 const homepage = readFileSync(join(dist, 'index.html'), 'utf8');
 const experiment = readFileSync(join(dist, 'experimente/gpt-5.6-sol-main-v2/index.html'), 'utf8');
@@ -90,5 +105,5 @@ if (files.some((file) => readFileSync(file, 'utf8').includes('https://github.com
 for (const path of allowedLegalTexts.keys()) if (!legalScriptsFound.has(path)) fail(`${path}: freigegebenes Rechtstext-Skript fehlt.`);
 
 console.log(`WEBSITE AUDIT: PASS · ${files.length} HTML-Seiten · 10 Parteiseiten · 45 Duellseiten · ${checkedLinks} interne Links.`);
-console.log(`Externe Ressourcen: Rechtstext-Einbindungen für Impressum und Datenschutz freigegeben (${allowedLegalScript}); keine weiteren externen Ressourcen gefunden.`);
+console.log(`Externe Ressourcen: Plausible Analytics sowie Rechtstext-Einbindungen für Impressum und Datenschutz freigegeben; keine weiteren externen Ressourcen gefunden.`);
 if (!homepage.includes('property="og:image"')) console.warn('WARNUNG: og:image und neutrales Social-Preview-Bild fehlen (nicht blockierend).');

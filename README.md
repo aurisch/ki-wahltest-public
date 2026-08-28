@@ -10,7 +10,7 @@ Die Website ist **keine Wahlentscheidungshilfe**. Auswahlquoten sind weder Wahlu
 - TypeScript im Strict-Modus
 - normales CSS, Systemfonts
 - keine eigene Datenbank oder Laufzeit-API
-- keine eigenen Analytics oder Cookies
+- keine Cookies; anonyme Reichweitenmessung über Plausible (cookielos)
 - Rechtstexte werden über die Einbindung der IT-Recht Kanzlei bereitgestellt
 - Vitest für Daten- und Hilfsfunktionstests
 
