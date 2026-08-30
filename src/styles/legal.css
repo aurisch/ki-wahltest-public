@@ -1,4 +1,24 @@
+.legal-page .prose {
+  max-width: 68rem;
+}
+
 .legal-page-title {
+  margin: 0.2rem 0 1rem;
+  font-size: clamp(1.45rem, 2.2vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+/*
+ * Die Datenschutzerklärung des externen Rechtstexts bringt ihre eigene
+ * sichtbare Überschrift mit. Deshalb bleibt unser lokaler H1 dort nur für die
+ * semantische Dokumentstruktur erhalten. Beim Impressum ist der lokale H1
+ * weiterhin sichtbar.
+ */
+.legal-page--privacy .legal-page-title {
   position: absolute;
   width: 1px;
   height: 1px;
