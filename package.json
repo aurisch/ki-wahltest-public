@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "astro dev",
     "audit:retries": "node scripts/audit-retries.mjs",
+    "audit:independent": "node scripts/audit-independent.mjs",
     "audit:data": "node scripts/audit-data.mjs && node scripts/audit-derived-semantics.mjs && npm run audit:retries",
     "audit:site": "node scripts/audit-site.mjs && node scripts/audit-copy-semantics.mjs",
     "check:launch": "npm run build && npm run audit:site && node scripts/check-launch.mjs",
-    "validate:data": "npm run audit:data",
+    "validate:data": "npm run audit:data && npm run audit:independent",
     "prebuild": "npm run audit:data",
     "build": "astro build",
     "preview": "astro preview",

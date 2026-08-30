@@ -22,6 +22,12 @@ jobs:
         run: npm ci
       - name: Primary data integrity audit
         run: npm run audit:data
+      - name: Cross-model protocol equivalence
+        run: node scripts/audit-cross-model.mjs
+      - name: Independent raw-data recomputation
+        run: npm run audit:independent
+      - name: Audit coverage inventory
+        run: node scripts/audit-coverage.mjs
       - name: Type checks
         run: npm run check
       - name: Unit tests
@@ -30,5 +36,19 @@ jobs:
         run: npm run build
       - name: Generated site audit
         run: npm run audit:site
+      - name: Model-neutrality and interpretation audit
+        run: node scripts/audit-neutrality.mjs
+      - name: Legal page regression audit
+        run: node scripts/audit-legal-pages.mjs
+      - name: Install browser audit runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Explicit viewport audit
+        run: node scripts/audit-viewports.mjs
+      - name: Full browser and chart geometry audit
+        run: node scripts/run-audit-browser.mjs
+      - name: Matrix story and prompt browser audit
+        run: node scripts/audit-browser-secondary.mjs
       - name: Launch gate
         run: node scripts/check-launch.mjs

@@ -77,7 +77,7 @@ const effortRows = getEffortRows(experiments);
         <p class="lede"><a href="/methodik/">Zur Methodik (u.a. Prompt Caching, Preisgrundlage) →</a></p>
 
         {comparison.methodologyDiffers && (
-          <div class="notice interpretation"><strong>Zusätzlicher methodischer Vorbehalt</strong>Die verglichenen Läufe verwenden nicht in jedem Fall dieselbe Prompt-Revision oder dieselben Modellparameter (Reasoning-Effort, Temperatur, maximale Ausgabelänge). Unterschiede können dann eine Mischung aus Modell-, Prompt- und Parametereffekt sein.</div>
+          <div class="notice interpretation"><strong>Zusätzlicher methodischer Vorbehalt</strong>Die drei Läufe verwenden dieselbe Prompt-Revision und dieselben 90 Promptvarianten. Die modellseitigen Parameter sind jedoch nicht vollständig identisch (insbesondere Reasoning-Effort und maximale Ausgabelänge). Unterschiede können deshalb eine Mischung aus Modell- und Parametereffekt sein.</div>
         )}
 
         <details class="table-details">

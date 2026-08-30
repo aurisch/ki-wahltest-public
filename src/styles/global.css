@@ -18,7 +18,7 @@ body { margin: 0; min-width: 20rem; font-size: clamp(1rem, 1.2vw, 1.08rem); line
 a { color: var(--teal-dark); text-underline-offset: .18em; text-decoration-thickness: .08em; transition: color .15s var(--ease); }
 a:hover { color: var(--teal); }
 :focus-visible { outline: 3px solid #d3932e; outline-offset: 3px; border-radius: .15rem; }
-h1, h2, h3 { margin: 0; font-weight: 650; line-height: 1.13; letter-spacing: -.025em; text-wrap: balance; }
+h1, h2, h3 { margin: 0; font-weight: 650; line-height: 1.13; letter-spacing: -.025em; text-wrap: balance; overflow-wrap: anywhere; }
 h1 { max-width: 16ch; font-size: clamp(2.55rem, 7vw, 5.65rem); }
 h2 { font-size: clamp(1.8rem, 4vw, 3.1rem); }
 h3 { font-size: 1.22rem; }
