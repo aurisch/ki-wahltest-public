@@ -121,7 +121,7 @@ export const experiment: Experiment = {
       'website-data.json': '3dc638ad90e8b04a03ab449630547ee2da6ad88d68d026fff14ea1668376161c',
       'pairwise-analysis.csv': '240797bbff81252b576a7449cbc15eddbdd0247e3afa99cc8d32f4b62d4afe33',
       'analysis-report.md': '5853b582f02a7df1916b3c70dfc92509edff136d153db238f0f31c75680caf47',
-      'usage.json': 'aed4697f70000a36c3739f07155cdd891b33ff861f4cef3952c96f9bb59a336f',
+      'usage.json': 'eb890b31db0a5ddb792058cb125b1ecb6e294ec2a8f4a69c5a8aab1af30b88f0',
     },
     publicBasePath: '/data/experiments/gpt-5.6-sol-main-v2',
     derivedBasePath: '/data/experiments/gpt-5.6-sol-main-v2',

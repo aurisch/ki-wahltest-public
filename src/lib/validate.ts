@@ -80,5 +80,14 @@ export function validateExperiment(experiment: Experiment): void {
   if (usage.cost.totalUsd < 0 || usage.cost.tokenBasedUsd < 0) errors.push('usage.cost enthält negative Kosten.');
   if (usage.cost.providerReportedUsd !== null && usage.cost.providerReportedUsd < 0) errors.push('usage.cost.providerReportedUsd ist negativ.');
 
+  if (usage.timing.nonRequestSpanMinutes < 0) errors.push('usage.timing.nonRequestSpanMinutes ist negativ.');
+  if (usage.timing.activeShareOfDocumentedSpan !== null
+    && (usage.timing.activeShareOfDocumentedSpan < 0 || usage.timing.activeShareOfDocumentedSpan > 1)) {
+    errors.push('usage.timing.activeShareOfDocumentedSpan liegt außerhalb [0,1].');
+  }
+  if (usage.timing.parallelism.maxConcurrentAttempts > 1 && usage.timing.activeApiMs >= usage.timing.allRequestDurationSumMs) {
+    errors.push('usage.timing.activeApiMs sollte bei paralleler Ausführung kleiner als die Summe aller durationMs sein.');
+  }
+
   if (errors.length) throw new Error(`Ungültige Experimentdaten:\n- ${errors.join('\n- ')}`);
 }

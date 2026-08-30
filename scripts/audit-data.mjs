@@ -137,6 +137,63 @@ function wilson95(wins, total) {
   return [center - margin, center + margin];
 }
 
+// Unabhängige Neuimplementierung der Timing-Rekonstruktion aus
+// derive-experiment-data.mjs (bewusst separat gehalten, nicht importiert,
+// damit dieser Audit auch einen Fehler in der Herleitung selbst fände).
+function percentileOf(sorted, p) {
+  if (sorted.length === 0) return null;
+  const index = (sorted.length - 1) * p;
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  if (lower === upper) return sorted[lower];
+  return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
+}
+
+function reconstructIntervalsForAudit(attemptList) {
+  return attemptList
+    .filter((attempt) => typeof attempt.durationMs === 'number')
+    .map((attempt) => {
+      const end = new Date(attempt.timestamp).getTime();
+      return { start: end - attempt.durationMs, end };
+    })
+    .sort((a, b) => a.start - b.start || a.end - b.end);
+}
+
+function maxConcurrencyForAudit(intervals) {
+  const events = [];
+  for (const interval of intervals) {
+    events.push([interval.start, 1]);
+    events.push([interval.end, -1]);
+  }
+  events.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  let current = 0;
+  let max = 0;
+  for (const [, delta] of events) {
+    current += delta;
+    if (current > max) max = current;
+  }
+  return max;
+}
+
+function mergedActiveMsForAudit(intervals) {
+  if (intervals.length === 0) return 0;
+  let blockStart = intervals[0].start;
+  let blockEnd = intervals[0].end;
+  let total = 0;
+  for (let i = 1; i < intervals.length; i += 1) {
+    const interval = intervals[i];
+    if (interval.start <= blockEnd) {
+      if (interval.end > blockEnd) blockEnd = interval.end;
+    } else {
+      total += blockEnd - blockStart;
+      blockStart = interval.start;
+      blockEnd = interval.end;
+    }
+  }
+  total += blockEnd - blockStart;
+  return total;
+}
+
 function checkImmutableHashes() {
   const checksumText = read(join(publicData, 'sha256sums.txt')).toString('utf8');
   const checksumEntries = new Map(checksumText.trim().split('\n').map((line) => {
@@ -435,6 +492,80 @@ function auditUsageStats(audit, usage, attempts, successesBySequence, manifest) 
     assert(usage.cost.providerReportedUsd === null, `${audit.id}: providerReportedUsd sollte bei ${providerId} null sein (keine Providerkosten pro Response).`);
   }
   assert(usage.cost.totalUsd >= 0 && usage.cost.tokenBasedUsd >= 0, `${audit.id}: negative Kosten in usage.json.`);
+
+  auditTimingStats(audit, usage, attempts, successfulAttempts, failedAttempts);
+}
+
+// Unabhängige Nachrechnung der neuen Timing-Kennzahlen (aktive API-Zeit,
+// Pausen, Parallelität) direkt aus results.jsonl.
+function auditTimingStats(audit, usage, attempts, successfulAttempts, failedAttempts) {
+  const timing = usage.timing;
+
+  const successfulDurations = successfulAttempts.map((a) => a.durationMs).filter((d) => typeof d === 'number');
+  const failedDurations = failedAttempts.map((a) => a.durationMs).filter((d) => typeof d === 'number');
+  const allDurations = attempts.map((a) => a.durationMs).filter((d) => typeof d === 'number');
+  const sum = (arr) => arr.reduce((s, d) => s + d, 0);
+
+  assert(timing.successfulDurationStats.count === successfulDurations.length, `${audit.id}: successfulDurationStats.count stimmt nicht.`);
+  assert(close(timing.successfulRequestDurationSumMs, sum(successfulDurations), 1e-6), `${audit.id}: successfulRequestDurationSumMs stimmt nicht mit Σ durationMs (Erfolge) überein.`);
+  assert(close(timing.failedRequestDurationSumMs, sum(failedDurations), 1e-6), `${audit.id}: failedRequestDurationSumMs stimmt nicht mit Σ durationMs (Fehlversuche) überein.`);
+  assert(close(timing.allRequestDurationSumMs, sum(allDurations), 1e-6), `${audit.id}: allRequestDurationSumMs stimmt nicht mit Σ durationMs (alle Attempts) überein.`);
+  assert(close(timing.allRequestDurationSumMs, timing.successfulRequestDurationSumMs + timing.failedRequestDurationSumMs, 1e-6), `${audit.id}: allRequestDurationSumMs ist nicht die Summe aus Erfolgs- und Fehlversuchsanteil.`);
+
+  const allTimestamps = attempts.map((a) => new Date(a.timestamp).getTime()).sort((a, b) => a - b);
+  const expectedDocumentedSpanMs = allTimestamps.at(-1) - allTimestamps[0];
+  assert(timing.documentedSpanMs === expectedDocumentedSpanMs, `${audit.id}: documentedSpanMs stimmt nicht mit erstem/letztem protokolliertem Attempt überein.`);
+  assert(typeof timing.documentedSpanBasis === 'string' && timing.documentedSpanBasis.length > 0, `${audit.id}: documentedSpanBasis fehlt oder ist leer — die verwendete Definition muss dokumentiert sein.`);
+
+  const allIntervals = reconstructIntervalsForAudit(attempts);
+  const successfulIntervals = reconstructIntervalsForAudit(successfulAttempts);
+  const expectedMaxConcurrentAttempts = maxConcurrencyForAudit(allIntervals);
+  const expectedMaxConcurrentSuccessful = maxConcurrencyForAudit(successfulIntervals);
+  assert(timing.parallelism.maxConcurrentAttempts === expectedMaxConcurrentAttempts, `${audit.id}: parallelism.maxConcurrentAttempts stimmt nicht mit der Rohdaten-Rekonstruktion überein.`);
+  assert(timing.parallelism.maxConcurrentSuccessfulAttempts === expectedMaxConcurrentSuccessful, `${audit.id}: parallelism.maxConcurrentSuccessfulAttempts stimmt nicht mit der Rohdaten-Rekonstruktion überein.`);
+  assert(timing.parallelism.isStrictlySerial === (expectedMaxConcurrentAttempts <= 1), `${audit.id}: isStrictlySerial widerspricht der beobachteten Parallelität.`);
+
+  const expectedActiveApiMs = mergedActiveMsForAudit(allIntervals);
+  assert(close(timing.activeApiMs, expectedActiveApiMs, 1e-6), `${audit.id}: activeApiMs stimmt nicht mit der Union der rekonstruierten Request-Intervalle überein.`);
+  // Kernprüfung gegen Doppelzählung bei Nebenläufigkeit: sobald echte
+  // Parallelität vorliegt, MUSS die Union strikt kleiner als die naive Summe
+  // aller durationMs sein — sonst würde fälschlich die Summendauer als
+  // Wall-clock-active-time verwendet.
+  if (expectedMaxConcurrentAttempts > 1) {
+    assert(timing.activeApiMs < timing.allRequestDurationSumMs, `${audit.id}: bei paralleler Ausführung (max. ${expectedMaxConcurrentAttempts}) muss activeApiMs kleiner als die naive Summe aller durationMs sein.`);
+  } else {
+    assert(close(timing.activeApiMs, timing.allRequestDurationSumMs, 1e-6), `${audit.id}: bei strikt serieller Ausführung sollte activeApiMs der Summe aller durationMs entsprechen.`);
+  }
+
+  assert(timing.nonRequestSpanMs >= 0, `${audit.id}: nonRequestSpanMinutes darf nicht negativ sein.`);
+  assert(close(timing.nonRequestSpanMs, timing.documentedSpanMs - timing.activeApiMs, 1e-6), `${audit.id}: nonRequestSpanMs ist nicht documentedSpanMs − activeApiMs.`);
+  if (timing.documentedSpanMs > 0) {
+    assert(timing.activeShareOfDocumentedSpan >= 0 && timing.activeShareOfDocumentedSpan <= 1, `${audit.id}: activeShareOfDocumentedSpan liegt außerhalb von [0, 1].`);
+    assert(close(timing.activeShareOfDocumentedSpan, timing.activeApiMs / timing.documentedSpanMs, 1e-9), `${audit.id}: activeShareOfDocumentedSpan stimmt nicht mit activeApiMs / documentedSpanMs überein.`);
+  }
+
+  // Lücken zwischen der Vereinigung der Intervalle unabhängig nachrechnen.
+  const merged = [];
+  if (allIntervals.length > 0) {
+    let block = { start: allIntervals[0].start, end: allIntervals[0].end };
+    for (let i = 1; i < allIntervals.length; i += 1) {
+      const iv = allIntervals[i];
+      if (iv.start <= block.end) {
+        if (iv.end > block.end) block.end = iv.end;
+      } else {
+        merged.push(block);
+        block = { start: iv.start, end: iv.end };
+      }
+    }
+    merged.push(block);
+  }
+  const expectedGapValues = [];
+  for (let i = 1; i < merged.length; i += 1) expectedGapValues.push(merged[i].start - merged[i - 1].end);
+  expectedGapValues.sort((a, b) => a - b);
+  assert(timing.gaps.count === expectedGapValues.length, `${audit.id}: gaps.count stimmt nicht.`);
+  assert(close(timing.gaps.sumMs, sum(expectedGapValues), 1e-6), `${audit.id}: gaps.sumMs stimmt nicht.`);
+  assert(timing.gaps.max === null || close(timing.gaps.max, expectedGapValues.at(-1) ?? 0, 1e-6), `${audit.id}: gaps.max stimmt nicht.`);
+  assert(Array.isArray(timing.gaps.largest) && timing.gaps.largest.length === Math.min(10, expectedGapValues.length), `${audit.id}: gaps.largest hat nicht die erwartete Länge.`);
 }
 
 function runAudit() {

@@ -7,17 +7,213 @@
     "successRate": 0.997229916897507
   },
   "timing": {
-    "firstRequestUtc": "2026-08-29T20:15:57.320Z",
+    "firstAttemptUtc": "2026-08-29T20:15:57.320Z",
+    "lastAttemptUtc": "2026-08-29T21:58:59.226Z",
+    "firstSuccessfulRequestUtc": "2026-08-29T20:15:57.320Z",
     "lastSuccessfulRequestUtc": "2026-08-29T21:58:59.226Z",
     "documentedSpanMs": 6181906,
     "documentedSpanMinutes": 103.03176666666667,
+    "documentedSpanBasis": "Erster bis letzter protokollierter Attempt (Erfolge und Fehlversuche); reine Kalenderzeit, keine Aussage über tatsächliche Request-Aktivität.",
     "successfulDecisionsPerMinute": 87.35170026849325,
-    "durationMsStats": {
-      "median": 628,
+    "successfulRequestDurationSumMs": 5840517,
+    "failedRequestDurationSumMs": 16853,
+    "allRequestDurationSumMs": 5857370,
+    "activeApiMs": 5248123,
+    "activeApiMinutes": 87.46871666666667,
+    "activeApiBasis": "Vereinigung der rekonstruierten Request-Intervalle (Start = Timestamp − durationMs) über alle Attempts; vermeidet Doppelzählung bei nebenläufiger Ausführung.",
+    "nonRequestSpanMs": 933783,
+    "nonRequestSpanMinutes": 15.56305,
+    "activeShareOfDocumentedSpan": 0.8489490134596029,
+    "successfulDurationStats": {
+      "count": 9000,
+      "sumMs": 5840517,
       "mean": 648.9463333333333,
+      "median": 628,
       "p95": 855,
       "min": 367,
       "max": 8381
+    },
+    "failedDurationStats": {
+      "count": 25,
+      "sumMs": 16853,
+      "mean": 674.12,
+      "median": 666,
+      "p95": 825.8,
+      "min": 443,
+      "max": 926
+    },
+    "allDurationStats": {
+      "count": 9025,
+      "sumMs": 5857370,
+      "mean": 649.0160664819945,
+      "median": 629,
+      "p95": 855,
+      "min": 367,
+      "max": 8381
+    },
+    "parallelism": {
+      "maxConcurrentAttempts": 3,
+      "maxConcurrentSuccessfulAttempts": 3,
+      "isStrictlySerial": false
+    },
+    "gaps": {
+      "basis": "Lücken zwischen der Vereinigung der rekonstruierten Request-Intervalle: Zeitspannen ohne jeden aktiven Request.",
+      "count": 4670,
+      "sumMs": 934421,
+      "sumMinutes": 15.573683333333333,
+      "median": 105,
+      "p95": 365,
+      "max": 108245,
+      "countOverThreshold": {
+        "over1s": 38,
+        "over5s": 8,
+        "over30s": 2,
+        "over1min": 2,
+        "over5min": 0,
+        "over10min": 0
+      },
+      "largest": [
+        {
+          "startUtc": "2026-08-29T21:57:10.106Z",
+          "endUtc": "2026-08-29T21:58:58.351Z",
+          "durationMs": 108245,
+          "durationMinutes": 1.8040833333333333,
+          "before": {
+            "sequence": 8861,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 4343,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:24:42.543Z",
+          "endUtc": "2026-08-29T20:26:30.602Z",
+          "durationMs": 108059,
+          "durationMinutes": 1.8009833333333334,
+          "before": {
+            "sequence": 741,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 357,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T21:56:39.513Z",
+          "endUtc": "2026-08-29T21:56:54.053Z",
+          "durationMs": 14540,
+          "durationMinutes": 0.24233333333333335,
+          "before": {
+            "sequence": 9000,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 1747,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:36:47.372Z",
+          "endUtc": "2026-08-29T20:36:55.192Z",
+          "durationMs": 7820,
+          "durationMinutes": 0.13033333333333333,
+          "before": {
+            "sequence": 1695,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 1696,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:23:13.214Z",
+          "endUtc": "2026-08-29T20:23:19.123Z",
+          "durationMs": 5909,
+          "durationMinutes": 0.09848333333333334,
+          "before": {
+            "sequence": 610,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 611,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:20:37.722Z",
+          "endUtc": "2026-08-29T20:20:43.321Z",
+          "durationMs": 5599,
+          "durationMinutes": 0.09331666666666667,
+          "before": {
+            "sequence": 392,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 393,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:19:04.931Z",
+          "endUtc": "2026-08-29T20:19:10.281Z",
+          "durationMs": 5350,
+          "durationMinutes": 0.08916666666666667,
+          "before": {
+            "sequence": 259,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 260,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:18:21.193Z",
+          "endUtc": "2026-08-29T20:18:26.223Z",
+          "durationMs": 5030,
+          "durationMinutes": 0.08383333333333333,
+          "before": {
+            "sequence": 208,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 209,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:18:04.584Z",
+          "endUtc": "2026-08-29T20:18:09.507Z",
+          "durationMs": 4923,
+          "durationMinutes": 0.08205,
+          "before": {
+            "sequence": 190,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 191,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-29T20:18:47.791Z",
+          "endUtc": "2026-08-29T20:18:52.340Z",
+          "durationMs": 4549,
+          "durationMinutes": 0.07581666666666667,
+          "before": {
+            "sequence": 241,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 242,
+            "attempt": 1
+          }
+        }
+      ]
     }
   },
   "tokens": {

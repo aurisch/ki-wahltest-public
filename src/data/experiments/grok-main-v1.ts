@@ -121,7 +121,7 @@ export const experiment: Experiment = {
       'website-data.json': '569073adf1cdde142fa4ba9196532d74618ee8b1254f414e4bfead04f491a069',
       'pairwise-analysis.csv': '5788bce8c852140f317c27a4cd674c4ca201727f24b938f3abfc1fb8a0e26e37',
       'analysis-report.md': 'be03c08a398149a220c75fb50d96500a66d8913ec17a54d8b4df8eba802a936f',
-      'usage.json': '6c54d6a7fc9b4582f3b763a9d0b588fe8f07630a3b21985087e5a6789268d9cc',
+      'usage.json': '1538d7a9530aec693b74f79c2e88ccf0d6076e274316f379d42315723ff4c5e2',
     },
     publicBasePath: '/data/experiments/grok-4.3-main-v1',
     derivedBasePath: '/data/experiments/grok-4.3-main-v1',

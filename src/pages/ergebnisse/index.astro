@@ -52,12 +52,14 @@ const effortRows = getEffortRows(experiments);
 
         <h2 class="section-title">Aufwand des Experiments</h2>
         <p class="lede">Requests, Laufzeit, Tokenverbrauch und Kosten je Modell – eine zusätzliche technische Vergleichsdimension. Sie sagt nichts darüber aus, ob ein Modell inhaltlich „besser" entschieden hat: ein schnelleres oder günstigeres Modell ist deshalb nicht treffsicherer oder neutraler. Laufzeitunterschiede können außerdem API-Auslastung, Rate-Limits, Retry-Verhalten, Prompt Caching und Infrastruktur des jeweiligen Anbieters widerspiegeln, nicht nur das Modell selbst.</p>
+        <div class="notice interpretation"><strong>Dokumentierter Gesamtzeitraum ≠ aktive API-Zeit</strong> Der dokumentierte Gesamtzeitraum reicht vom ersten bis zum letzten protokollierten Attempt und schließt Pausen, Retries und mögliche Wartezeiten ein. Die aktive API-Zeit summiert nur die Zeitspannen, in denen mindestens ein Request nachweislich aktiv war (Vereinigung der rekonstruierten Request-Intervalle, keine Doppelzählung bei paralleler Ausführung). Details je Experiment stehen auf der jeweiligen Daten-Seite.</div>
         <div class="table-wrap" tabindex="0" role="region" aria-label="Tabelle, horizontal scrollbar auf kleinen Bildschirmen">
           <table class="compare-table">
             <thead><tr><th scope="col"></th>{effortRows.map(({ experiment }) => <th scope="col">{experiment.model.name}</th>)}</tr></thead>
             <tbody>
               <tr><th scope="row">Erfolgreiche Entscheidungen</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.requests.successful)}</td>)}</tr>
-              <tr><th scope="row">Dokumentierter Request-Zeitraum</th>{effortRows.map(({ experiment }) => <td>{formatMinutes(experiment.usage.timing.documentedSpanMinutes)}</td>)}</tr>
+              <tr><th scope="row">Dokumentierter Gesamtzeitraum</th>{effortRows.map(({ experiment }) => <td>{formatMinutes(experiment.usage.timing.documentedSpanMinutes)}</td>)}</tr>
+              <tr><th scope="row">Aktive API-Zeit</th>{effortRows.map(({ experiment }) => <td>{formatMinutes(experiment.usage.timing.activeApiMinutes)} <small>({formatPercent(experiment.usage.timing.activeShareOfDocumentedSpan ?? 0, 0)})</small></td>)}</tr>
               <tr><th scope="row">Requests/Minute</th>{effortRows.map(({ experiment }) => <td>{experiment.usage.timing.successfulDecisionsPerMinute?.toFixed(1) ?? '–'}</td>)}</tr>
               <tr><th scope="row">Input-Tokens</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.inputTotal)}</td>)}</tr>
               <tr><th scope="row">davon Cached Input</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.cachedInputTotal)} <small>({formatPercent(experiment.usage.caching.cachedInputShare, 0)})</small></td>)}</tr>

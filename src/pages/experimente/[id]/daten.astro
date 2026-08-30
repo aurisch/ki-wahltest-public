@@ -11,7 +11,7 @@ const { usage } = experiment;
   <h2>Abgeleitete Website- und Analysedaten</h2><p>Diese Dateien vereinfachen Darstellung und Analyse. Sie sind keine Primärquelle.</p><div class="link-list"><a href={`${experiment.provenance.derivedBasePath}/website-data.json`} download>website-data.json · abgeleitete Website-Daten</a><a href={`${experiment.provenance.derivedBasePath}/pairwise-analysis.csv`} download>pairwise-analysis.csv · abgeleitete Paaranalyse</a><a href={`${experiment.provenance.derivedBasePath}/analysis-report.md`} download>analysis-report.md · Analysebericht</a><a href={`${experiment.provenance.derivedBasePath}/usage.json`} download>usage.json · Betriebs- und Kostenkennzahlen</a></div>
 
   <h2>Betrieb, Tokenverbrauch und Kosten</h2>
-  <p>Automatisch aus <code>results.jsonl</code> und <code>manifest.json</code> abgeleitet, nicht manuell gepflegt. Der Zeitraum zwischen erstem und letztem Request ist der <strong>dokumentierte Request-Zeitraum</strong>, nicht zwingend die gesamte Programmlaufzeit des Runners (Vorbereitung, Auswertung etc. sind nicht enthalten).</p>
+  <p>Automatisch aus <code>results.jsonl</code> und <code>manifest.json</code> abgeleitet, nicht manuell gepflegt. Weder der dokumentierte Gesamtzeitraum noch die aktive API-Zeit (siehe unten) entsprechen zwingend der gesamten Programmlaufzeit des Runners (Vorbereitung, Auswertung etc. sind nicht enthalten).</p>
 
   <h3>Requests</h3>
   <dl class="meta-list">
@@ -23,17 +23,48 @@ const { usage } = experiment;
   </dl>
 
   <h3>Laufzeit</h3>
+  <p><strong>Dokumentierter Gesamtzeitraum</strong> und <strong>aktive API-Zeit</strong> sind unterschiedliche Größen und werden deshalb getrennt ausgewiesen: {usage.timing.documentedSpanBasis} {usage.timing.activeApiBasis}</p>
   <dl class="meta-list">
-    <dt>Dokumentierter Request-Zeitraum</dt><dd>{formatMinutes(usage.timing.documentedSpanMinutes)} ({new Date(usage.timing.firstRequestUtc).toISOString()} – {new Date(usage.timing.lastSuccessfulRequestUtc).toISOString()})</dd>
+    <dt>Dokumentierter Gesamtzeitraum</dt><dd>{formatMinutes(usage.timing.documentedSpanMinutes)} ({new Date(usage.timing.firstAttemptUtc).toISOString()} – {new Date(usage.timing.lastAttemptUtc).toISOString()})</dd>
+    <dt>Aktive API-Zeit</dt><dd>{formatMinutes(usage.timing.activeApiMinutes)} ({formatPercent(usage.timing.activeShareOfDocumentedSpan ?? 0)} des Gesamtzeitraums)</dd>
+    <dt>Nicht durch Requests belegte Zeit</dt><dd>{formatMinutes(usage.timing.nonRequestSpanMinutes)}</dd>
     <dt>Ø erfolgreiche Entscheidungen/Minute</dt><dd>{usage.timing.successfulDecisionsPerMinute?.toFixed(2) ?? '–'}</dd>
-    {usage.timing.durationMsStats && (<>
-      <dt>durationMs – Median</dt><dd>{formatInteger(usage.timing.durationMsStats.median)} ms</dd>
-      <dt>durationMs – Mittelwert</dt><dd>{formatInteger(Math.round(usage.timing.durationMsStats.mean))} ms</dd>
-      <dt>durationMs – p95</dt><dd>{formatInteger(usage.timing.durationMsStats.p95)} ms</dd>
-      <dt>durationMs – Min/Max</dt><dd>{formatInteger(usage.timing.durationMsStats.min)} ms / {formatInteger(usage.timing.durationMsStats.max)} ms</dd>
+    <dt>Maximale Parallelität</dt><dd>{formatInteger(usage.timing.parallelism.maxConcurrentAttempts)} gleichzeitig rekonstruierte Requests ({usage.timing.parallelism.isStrictlySerial ? 'streng seriell' : 'nicht streng seriell'})</dd>
+    {usage.timing.successfulDurationStats && (<>
+      <dt>durationMs, erfolgreich – Median</dt><dd>{formatInteger(usage.timing.successfulDurationStats.median)} ms</dd>
+      <dt>durationMs, erfolgreich – Mittelwert</dt><dd>{formatInteger(Math.round(usage.timing.successfulDurationStats.mean))} ms</dd>
+      <dt>durationMs, erfolgreich – p95</dt><dd>{formatInteger(usage.timing.successfulDurationStats.p95)} ms</dd>
+      <dt>durationMs, erfolgreich – Min/Max</dt><dd>{formatInteger(usage.timing.successfulDurationStats.min)} ms / {formatInteger(usage.timing.successfulDurationStats.max)} ms</dd>
+    </>)}
+    {usage.timing.failedDurationStats && (<>
+      <dt>durationMs, fehlgeschlagene Attempts – Summe</dt><dd>{formatMinutes(usage.timing.failedRequestDurationSumMs / 60000)}</dd>
+      <dt>durationMs, fehlgeschlagene Attempts – Min/Max</dt><dd>{formatInteger(usage.timing.failedDurationStats.min)} ms / {formatInteger(usage.timing.failedDurationStats.max)} ms</dd>
     </>)}
   </dl>
   <p class="notice">Keine Aussage wie „dieses Modell ist schneller" ohne Vorbehalt: Laufzeit kann API-Auslastung, Rate-Limits, Retry-Verhalten und Infrastruktur des jeweiligen Anbieters widerspiegeln, nicht nur das Modell selbst.</p>
+
+  {usage.timing.gaps.count > 0 && (
+    <>
+      <h3>Pausen zwischen Requests</h3>
+      <p>{usage.timing.gaps.basis} Insgesamt {formatInteger(usage.timing.gaps.count)} Pausen, Summe {formatMinutes(usage.timing.gaps.sumMinutes)}</p>
+      <dl class="meta-list">
+        <dt>Größte Pause</dt><dd>{formatMinutes((usage.timing.gaps.max ?? 0) / 60000)}</dd>
+        <dt>Pausen &gt; 1 Minute</dt><dd>{formatInteger(usage.timing.gaps.countOverThreshold.over1min)}</dd>
+        <dt>Pausen &gt; 5 Minuten</dt><dd>{formatInteger(usage.timing.gaps.countOverThreshold.over5min)}</dd>
+        <dt>Pausen &gt; 10 Minuten</dt><dd>{formatInteger(usage.timing.gaps.countOverThreshold.over10min)}</dd>
+      </dl>
+      {usage.timing.gaps.largest.length > 0 && (
+        <>
+          <p>Die {usage.timing.gaps.largest.length} größten Pausen:</p>
+          <ul class="gap-list">
+            {usage.timing.gaps.largest.map((gap) => (
+              <li><strong>{formatMinutes(gap.durationMinutes)}</strong> — {new Date(gap.startUtc).toISOString()} bis {new Date(gap.endUtc).toISOString()} (zwischen Sequenz {gap.before.sequence}/Attempt {gap.before.attempt} und Sequenz {gap.after.sequence}/Attempt {gap.after.attempt})</li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  )}
 
   <h3>Tokenverbrauch (erfolgreiche Entscheidungen)</h3>
   <dl class="meta-list">
@@ -74,4 +105,4 @@ const { usage } = experiment;
 
   <h2>SHA-256</h2><dl class="meta-list">{Object.entries(experiment.provenance.sha256).map(([file, hash]) => <><dt>{file}</dt><dd><code>{hash}</code></dd></>)}</dl>
 </div></article></BaseLayout>
-<style>.downloads{display:grid;gap:1rem;margin-top:1.5rem}.download{display:grid;gap:.35rem;padding:1.2rem;border:1px solid var(--line);border-radius:var(--radius-lg);color:var(--ink);background:var(--surface);box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color .18s var(--ease),box-shadow .18s var(--ease),transform .18s var(--ease)}.download:hover{border-color:var(--teal);box-shadow:var(--shadow-md);transform:translateY(-2px)}.download span{color:var(--muted);font-size:.9rem}.download small{color:var(--teal);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.meta-list code{overflow-wrap:anywhere;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}</style>
+<style>.downloads{display:grid;gap:1rem;margin-top:1.5rem}.download{display:grid;gap:.35rem;padding:1.2rem;border:1px solid var(--line);border-radius:var(--radius-lg);color:var(--ink);background:var(--surface);box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color .18s var(--ease),box-shadow .18s var(--ease),transform .18s var(--ease)}.download:hover{border-color:var(--teal);box-shadow:var(--shadow-md);transform:translateY(-2px)}.download span{color:var(--muted);font-size:.9rem}.download small{color:var(--teal);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.meta-list code{overflow-wrap:anywhere;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.gap-list{display:grid;gap:.5rem;padding:0;margin:1rem 0;list-style:none;font-size:.9rem;color:var(--muted)}.gap-list li{padding:.6rem .8rem;border:1px solid var(--line);border-radius:var(--radius)}.gap-list strong{color:var(--ink)}</style>

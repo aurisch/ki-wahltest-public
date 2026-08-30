@@ -138,6 +138,77 @@ function median(sortedValues) {
   return percentile(sortedValues, 0.5);
 }
 
+function durationStats(durationValues) {
+  if (durationValues.length === 0) return null;
+  const sorted = [...durationValues].sort((a, b) => a - b);
+  const sumMs = sorted.reduce((sum, value) => sum + value, 0);
+  return {
+    count: sorted.length,
+    sumMs,
+    mean: sumMs / sorted.length,
+    median: median(sorted),
+    p95: percentile(sorted, 0.95),
+    min: sorted[0],
+    max: sorted.at(-1),
+  };
+}
+
+// Rekonstruiert Zeitintervalle je Attempt: `timestamp` markiert laut
+// Rohdatenschema den Abschluss eines Requests, daher requestStart :=
+// timestamp - durationMs. Für pathologisch lange Timeout-Attempts ist dieser
+// rekonstruierte Start unsicher (siehe Analyse in Abschnitt "Pausen"), bleibt
+// hier aber die einzige verfügbare Näherung.
+function reconstructIntervals(attemptList) {
+  return attemptList
+    .filter((attempt) => typeof attempt.durationMs === 'number')
+    .map((attempt) => {
+      const end = new Date(attempt.timestamp).getTime();
+      return { start: end - attempt.durationMs, end, sequence: attempt.sequence, attempt: attempt.attempt };
+    })
+    .sort((a, b) => a.start - b.start || a.end - b.end);
+}
+
+// Maximale Anzahl gleichzeitig "aktiver" rekonstruierter Intervalle
+// (Sweep-Line über Start-/End-Ereignisse) — zeigt, ob Requests seriell oder
+// mit Nebenläufigkeit ausgeführt wurden.
+function maxConcurrency(intervals) {
+  const events = [];
+  for (const interval of intervals) {
+    events.push([interval.start, 1]);
+    events.push([interval.end, -1]);
+  }
+  events.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  let current = 0;
+  let max = 0;
+  for (const [, delta] of events) {
+    current += delta;
+    if (current > max) max = current;
+  }
+  return max;
+}
+
+// Vereinigt überlappende/aneinandergrenzende Intervalle (sortiert nach
+// Start) zu disjunkten Blöcken. Die Summe der Blocklängen ist die reale
+// Wall-Clock-Zeit, in der mindestens ein Request aktiv war — im Gegensatz
+// zur naiven Summe aller durationMs, die bei Nebenläufigkeit mehrfach zählt.
+function mergeIntervals(intervals) {
+  if (intervals.length === 0) return [];
+  const merged = [{ start: intervals[0].start, end: intervals[0].end, first: intervals[0], last: intervals[0] }];
+  for (let i = 1; i < intervals.length; i += 1) {
+    const interval = intervals[i];
+    const block = merged.at(-1);
+    if (interval.start <= block.end) {
+      if (interval.end > block.end) {
+        block.end = interval.end;
+        block.last = interval;
+      }
+    } else {
+      merged.push({ start: interval.start, end: interval.end, first: interval, last: interval });
+    }
+  }
+  return merged;
+}
+
 // Requests, Laufzeit, Tokenverbrauch, Caching und Kosten aus den Rohdaten
 // ableiten. providerunabhängig: usage-Felder werden defensiv mit `?? 0`
 // gelesen, da OpenAI und xAI leicht unterschiedliche usage-Objekte liefern
@@ -154,17 +225,88 @@ function deriveUsageStats(manifest, attempts, successesBySequence) {
   const retries = failed;
 
   // Laufzeit
+  // Dokumentierter Gesamtzeitraum: erster bis letzter protokollierter Attempt
+  // (Erfolge UND Fehlversuche), nicht nur Erfolge — ein fehlgeschlagener
+  // Attempt vor dem ersten oder nach dem letzten Erfolg würde sonst fehlen.
+  // In den beiden bisherigen Läufen liegt ohnehin kein Fehlversuch außerhalb
+  // des erfolgsbasierten Fensters, der Wert ändert sich dadurch nicht.
   const successfulTimestamps = successfulAttempts.map((a) => new Date(a.timestamp).getTime()).sort((a, b) => a - b);
-  const firstRequestUtc = new Date(successfulTimestamps[0]).toISOString();
+  const allTimestamps = attempts.map((a) => new Date(a.timestamp).getTime()).sort((a, b) => a - b);
+  const firstSuccessfulRequestUtc = new Date(successfulTimestamps[0]).toISOString();
   const lastSuccessfulRequestUtc = new Date(successfulTimestamps.at(-1)).toISOString();
-  const documentedSpanMs = successfulTimestamps.at(-1) - successfulTimestamps[0];
+  const firstAttemptUtc = new Date(allTimestamps[0]).toISOString();
+  const lastAttemptUtc = new Date(allTimestamps.at(-1)).toISOString();
+  const documentedSpanMs = allTimestamps.at(-1) - allTimestamps[0];
   const documentedSpanMinutes = documentedSpanMs / 60000;
+  const documentedSpanBasis = 'Erster bis letzter protokollierter Attempt (Erfolge und Fehlversuche); reine Kalenderzeit, keine Aussage über tatsächliche Request-Aktivität.';
   const successfulDecisionsPerMinute = documentedSpanMinutes > 0 ? successful / documentedSpanMinutes : null;
 
-  const durations = successfulAttempts.map((a) => a.durationMs).filter((d) => typeof d === 'number').sort((a, b) => a - b);
-  const durationMsStats = durations.length
-    ? { median: median(durations), mean: durations.reduce((s, d) => s + d, 0) / durations.length, p95: percentile(durations, 0.95), min: durations[0], max: durations.at(-1) }
-    : null;
+  const successfulDurations = successfulAttempts.map((a) => a.durationMs).filter((d) => typeof d === 'number');
+  const failedDurations = failedAttempts.map((a) => a.durationMs).filter((d) => typeof d === 'number');
+  const allDurations = attempts.map((a) => a.durationMs).filter((d) => typeof d === 'number');
+  const successfulDurationStats = durationStats(successfulDurations);
+  const failedDurationStats = durationStats(failedDurations);
+  const allDurationStats = durationStats(allDurations);
+
+  const successfulRequestDurationSumMs = successfulDurations.reduce((sum, d) => sum + d, 0);
+  const failedRequestDurationSumMs = failedDurations.reduce((sum, d) => sum + d, 0);
+  const allRequestDurationSumMs = allDurations.reduce((sum, d) => sum + d, 0);
+
+  // Aktive API-Zeit = Vereinigung der rekonstruierten Request-Intervalle
+  // (siehe reconstructIntervals/mergeIntervals oben). Nicht die naive Summe
+  // aller durationMs, da beide Läufe nachweislich nebenläufig ausgeführt
+  // wurden (siehe parallelism unten) und eine Summe überlappende Zeit
+  // mehrfach zählen würde.
+  const allIntervals = reconstructIntervals(attempts);
+  const mergedIntervals = mergeIntervals(allIntervals);
+  const activeApiMs = mergedIntervals.reduce((sum, block) => sum + (block.end - block.start), 0);
+  const activeApiMinutes = activeApiMs / 60000;
+  const activeApiBasis = 'Vereinigung der rekonstruierten Request-Intervalle (Start = Timestamp − durationMs) über alle Attempts; vermeidet Doppelzählung bei nebenläufiger Ausführung.';
+  const nonRequestSpanMs = documentedSpanMs - activeApiMs;
+  const nonRequestSpanMinutes = nonRequestSpanMs / 60000;
+  const activeShareOfDocumentedSpan = documentedSpanMs > 0 ? activeApiMs / documentedSpanMs : null;
+
+  const successfulIntervals = reconstructIntervals(successfulAttempts);
+  const parallelism = {
+    maxConcurrentAttempts: maxConcurrency(allIntervals),
+    maxConcurrentSuccessfulAttempts: maxConcurrency(successfulIntervals),
+    isStrictlySerial: maxConcurrency(allIntervals) <= 1,
+  };
+
+  // Lücken zwischen den vereinigten Aktivitätsblöcken = Zeit, in der
+  // nachweislich kein einziger Request (Erfolg oder Fehlversuch) aktiv war.
+  const gapEntries = [];
+  for (let i = 1; i < mergedIntervals.length; i += 1) {
+    const gapMs = mergedIntervals[i].start - mergedIntervals[i - 1].end;
+    gapEntries.push({ gapMs, prevBlock: mergedIntervals[i - 1], nextBlock: mergedIntervals[i] });
+  }
+  const gapValues = gapEntries.map((g) => g.gapMs).sort((a, b) => a - b);
+  const gapThresholds = [
+    ['over1s', 1000], ['over5s', 5000], ['over30s', 30000],
+    ['over1min', 60000], ['over5min', 300000], ['over10min', 600000],
+  ];
+  const largestGaps = [...gapEntries]
+    .sort((a, b) => b.gapMs - a.gapMs)
+    .slice(0, 10)
+    .map((g) => ({
+      startUtc: new Date(g.prevBlock.end).toISOString(),
+      endUtc: new Date(g.nextBlock.start).toISOString(),
+      durationMs: g.gapMs,
+      durationMinutes: g.gapMs / 60000,
+      before: { sequence: g.prevBlock.last.sequence, attempt: g.prevBlock.last.attempt },
+      after: { sequence: g.nextBlock.first.sequence, attempt: g.nextBlock.first.attempt },
+    }));
+  const gaps = {
+    basis: 'Lücken zwischen der Vereinigung der rekonstruierten Request-Intervalle: Zeitspannen ohne jeden aktiven Request.',
+    count: gapValues.length,
+    sumMs: gapValues.reduce((sum, g) => sum + g, 0),
+    sumMinutes: gapValues.reduce((sum, g) => sum + g, 0) / 60000,
+    median: median(gapValues),
+    p95: percentile(gapValues, 0.95),
+    max: gapValues.length ? gapValues.at(-1) : null,
+    countOverThreshold: Object.fromEntries(gapThresholds.map(([key, ms]) => [key, gapValues.filter((g) => g > ms).length])),
+    largest: largestGaps,
+  };
 
   // Tokens (erfolgreiche Entscheidungen; Fehlversuche separat)
   let inputTotal = 0, cachedInputTotal = 0, outputTotal = 0, reasoningTotal = 0;
@@ -231,12 +373,28 @@ function deriveUsageStats(manifest, attempts, successesBySequence) {
   return {
     requests: { successful, totalAttempts, failed, retries, successRate: successful / totalAttempts },
     timing: {
-      firstRequestUtc,
+      firstAttemptUtc,
+      lastAttemptUtc,
+      firstSuccessfulRequestUtc,
       lastSuccessfulRequestUtc,
       documentedSpanMs,
       documentedSpanMinutes,
+      documentedSpanBasis,
       successfulDecisionsPerMinute,
-      durationMsStats,
+      successfulRequestDurationSumMs,
+      failedRequestDurationSumMs,
+      allRequestDurationSumMs,
+      activeApiMs,
+      activeApiMinutes,
+      activeApiBasis,
+      nonRequestSpanMs,
+      nonRequestSpanMinutes,
+      activeShareOfDocumentedSpan,
+      successfulDurationStats,
+      failedDurationStats,
+      allDurationStats,
+      parallelism,
+      gaps,
     },
     tokens: {
       inputTotal,
@@ -458,7 +616,8 @@ function run() {
 
   console.log(`Geschrieben: ${join('public/data/experiments', experimentId, 'usage.json')}`);
   console.log(`Requests: ${usage.requests.successful} erfolgreich / ${usage.requests.totalAttempts} Attempts / ${usage.requests.failed} fehlgeschlagen / ${usage.requests.retries} Retries (Erfolgsquote ${(usage.requests.successRate * 100).toFixed(2)} %)`);
-  console.log(`Dokumentierter Request-Zeitraum: ${usage.timing.documentedSpanMinutes.toFixed(1)} min (${usage.timing.successfulDecisionsPerMinute.toFixed(2)} erfolgreiche Entscheidungen/min); durationMs Median=${usage.timing.durationMsStats.median}, p95=${usage.timing.durationMsStats.p95}`);
+  console.log(`Dokumentierter Gesamtzeitraum: ${usage.timing.documentedSpanMinutes.toFixed(1)} min (${usage.timing.successfulDecisionsPerMinute.toFixed(2)} erfolgreiche Entscheidungen/min); durationMs Median=${usage.timing.successfulDurationStats.median}, p95=${usage.timing.successfulDurationStats.p95}`);
+  console.log(`Aktive API-Zeit: ${usage.timing.activeApiMinutes.toFixed(1)} min (${(usage.timing.activeShareOfDocumentedSpan * 100).toFixed(1)} % des Gesamtzeitraums); Nicht-Request-Zeit: ${usage.timing.nonRequestSpanMinutes.toFixed(1)} min; max. Parallelität=${usage.timing.parallelism.maxConcurrentAttempts}; größte Pause=${(usage.timing.gaps.max / 60000).toFixed(2)} min`);
   console.log(`Tokens: Input=${usage.tokens.inputTotal} (davon cached=${usage.tokens.cachedInputTotal}), Output=${usage.tokens.outputTotal}, Reasoning=${usage.tokens.reasoningTotal}, Gesamt=${usage.tokens.totalTokens}`);
   console.log(`Caching: ${usage.caching.requestsWithCacheHit} Requests mit Cache-Hit (${(usage.caching.cacheHitShare * 100).toFixed(1)} %), gecachter Input-Anteil ${(usage.caching.cachedInputShare * 100).toFixed(1)} %`);
   console.log(`Kosten: Pricing-Snapshot ${usage.cost.pricingSnapshot.provider}/${usage.cost.pricingSnapshot.model} ab ${usage.cost.pricingSnapshot.effectiveFrom}; Gesamt=$${usage.cost.totalUsd.toFixed(4)} (providerReported=${usage.cost.providerReportedUsd === null ? 'n/a' : `$${usage.cost.providerReportedUsd.toFixed(4)}`}, tokenBased=$${usage.cost.tokenBasedUsd.toFixed(4)}); je 1.000 Entscheidungen=$${usage.cost.perThousandDecisionsUsd.toFixed(4)}`);

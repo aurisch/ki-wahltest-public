@@ -49,6 +49,16 @@ export type PositionEffectResult = {
   pFirstIfEqual: number;
 };
 
+export type DurationStats = {
+  count: number;
+  sumMs: number;
+  mean: number;
+  median: number;
+  p95: number;
+  min: number;
+  max: number;
+};
+
 export type PricingSnapshot = {
   provider: string;
   model: string;
@@ -68,12 +78,56 @@ export type UsageStats = {
     successRate: number;
   };
   timing: {
-    firstRequestUtc: string;
+    firstAttemptUtc: string;
+    lastAttemptUtc: string;
+    firstSuccessfulRequestUtc: string;
     lastSuccessfulRequestUtc: string;
     documentedSpanMs: number;
     documentedSpanMinutes: number;
+    documentedSpanBasis: string;
     successfulDecisionsPerMinute: number | null;
-    durationMsStats: { median: number; mean: number; p95: number; min: number; max: number } | null;
+    successfulRequestDurationSumMs: number;
+    failedRequestDurationSumMs: number;
+    allRequestDurationSumMs: number;
+    activeApiMs: number;
+    activeApiMinutes: number;
+    activeApiBasis: string;
+    nonRequestSpanMs: number;
+    nonRequestSpanMinutes: number;
+    activeShareOfDocumentedSpan: number | null;
+    successfulDurationStats: DurationStats | null;
+    failedDurationStats: DurationStats | null;
+    allDurationStats: DurationStats | null;
+    parallelism: {
+      maxConcurrentAttempts: number;
+      maxConcurrentSuccessfulAttempts: number;
+      isStrictlySerial: boolean;
+    };
+    gaps: {
+      basis: string;
+      count: number;
+      sumMs: number;
+      sumMinutes: number;
+      median: number | null;
+      p95: number | null;
+      max: number | null;
+      countOverThreshold: {
+        over1s: number;
+        over5s: number;
+        over30s: number;
+        over1min: number;
+        over5min: number;
+        over10min: number;
+      };
+      largest: Array<{
+        startUtc: string;
+        endUtc: string;
+        durationMs: number;
+        durationMinutes: number;
+        before: { sequence: number; attempt: number };
+        after: { sequence: number; attempt: number };
+      }>;
+    };
   };
   tokens: {
     inputTotal: number;
