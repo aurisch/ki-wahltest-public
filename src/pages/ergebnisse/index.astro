@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ModelRankChart from '../../components/ModelRankChart.astro';
 import ModelDivergencePanel from '../../components/ModelDivergencePanel.astro';
-import PositionEffectStat from '../../components/PositionEffectStat.astro';
+import PositionEffectComparison from '../../components/PositionEffectComparison.astro';
 import OrderComparison from '../../components/OrderComparison.astro';
 import { buildComparison, getBiggestDivergences, getEffortRows } from '../../lib/comparison';
 import { experiments } from '../../lib/experiments';
@@ -35,13 +35,13 @@ const effortRows = getEffortRows(experiments);
 
         <h2 class="section-title">Reihenfolgeeffekt im Vergleich</h2>
         <p class="lede">Bei jedem Modell wurden dieselben zwei Parteien in beiden möglichen Reihenfolgen genannt – bei ansonsten identischem Prompt. Gezeigt werden beobachtete Unterschiede zwischen diesen beiden Bedingungen.</p>
+        <PositionEffectComparison experiments={comparison.experiments} />
         <div class="position-examples">
           {comparison.experiments.map((experiment) => {
             const pair = pickSurprisePair(experiment);
             return (
               <div class="position-example">
                 <h3>{experiment.model.name}</h3>
-                <PositionEffectStat experiment={experiment} />
                 <p class="example-caption">Stärkstes beobachtetes Beispiel: <strong>{shortPartyName(pair.parties[0])}</strong> gegen <strong>{shortPartyName(pair.parties[1])}</strong>.</p>
                 <OrderComparison pair={pair} />
                 <p class="detail-link"><a href={`/experimente/${experiment.id}/duelle/${pair.id}/`}>Dieses Duell vollständig untersuchen →</a></p>

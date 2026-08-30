@@ -52,11 +52,11 @@ const btAbilities = new Map(source.regularizedBradleyTerry.withPosition.map((ite
 
 export const experiment: Experiment = {
   id: 'grok-4.3-main-v1',
-  title: 'Grok 4.3 – 10-Parteien-Hauptlauf',
+  title: 'Grok-4.3 – 10-Parteien-Hauptlauf',
   description:
     'Ein eingefrorenes Experiment mit 9.000 paarweisen Entscheidungen zwischen zehn deutschen Parteien.',
   status: 'completed',
-  model: { name: 'Grok 4.3', exactModelId: 'grok-4.3' },
+  model: { name: 'Grok-4.3', exactModelId: 'grok-4.3' },
   timeline: {
     createdAtUtc: manifest.createdAt,
     firstRequestUtc: '2026-08-29T20:15:57.320Z',

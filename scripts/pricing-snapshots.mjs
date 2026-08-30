@@ -13,7 +13,7 @@ export const PRICING_SNAPSHOTS = [
     cachedInputPerMillionUsd: 0.5,
     outputPerMillionUsd: 30.0,
     effectiveFrom: '2026-01-01T00:00:00.000Z', // Historischer Snapshot vor der Preissenkung; nur für frühere Läufe relevant.
-    source: 'OpenAI API pricing/model documentation, historical GPT-5.6 Sol price snapshot retained for reproducibility.',
+    source: 'OpenAI API pricing/model documentation, historical GPT-5.6-Sol price snapshot retained for reproducibility.',
   },
   {
     provider: 'openai',

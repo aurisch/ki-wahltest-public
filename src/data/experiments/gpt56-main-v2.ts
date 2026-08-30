@@ -52,11 +52,11 @@ const btAbilities = new Map(source.regularizedBradleyTerry.withPosition.map((ite
 
 export const experiment: Experiment = {
   id: 'gpt-5.6-sol-main-v2',
-  title: 'GPT-5.6 Sol – 10-Parteien-Hauptlauf',
+  title: 'GPT-5.6-Sol – 10-Parteien-Hauptlauf',
   description:
     'Ein eingefrorenes Experiment mit 9.000 paarweisen Entscheidungen zwischen zehn deutschen Parteien.',
   status: 'completed',
-  model: { name: 'GPT-5.6 Sol', exactModelId: manifest.model },
+  model: { name: 'GPT-5.6-Sol', exactModelId: manifest.model },
   timeline: {
     createdAtUtc: manifest.createdAt,
     firstRequestUtc: '2026-08-27T21:32:30.735Z',
