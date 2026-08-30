@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { experiments } from '../../lib/experiments';
+import { formatInteger } from '../../lib/format';
+---
+<BaseLayout title="Daten" description="Offene Primär- und Analysedaten aller im KI-Wahltest getesteten KI-Modelle.">
+  <article class="page"><div class="container prose">
+    <p class="eyebrow">Offene Daten</p><h1>Daten und Provenienz</h1>
+    <p class="lede">Die Website wird ausschließlich aus versionierten, eingefrorenen Dateien gebaut. Sie erzeugt keine Versuchsdaten zur Laufzeit. Für jedes Modell sind Manifest, eingefrorene Jobliste und vollständiges Ergebnisprotokoll als maßgebliche Primärquellen öffentlich verfügbar, dazu abgeleitete Website- und Analysedaten mit Prüfsummen.</p>
+    <div class="link-list narrow">
+      {experiments.filter((experiment) => experiment.status === 'completed').map((experiment) => (
+        <a href={`/experimente/${experiment.id}/daten/`}><span>{experiment.model.name}</span><span>{formatInteger(experiment.parameters.totalRequests)} Entscheidungen</span></a>
+      ))}
+    </div>
+    <p class="lede"><a href="/methodik/">So wurde getestet →</a></p>
+  </div></article>
+</BaseLayout>

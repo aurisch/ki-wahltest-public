@@ -1,42 +1,86 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { resolvePricing } from './pricing-snapshots.mjs';
 
 const root = process.cwd();
 const publicData = join(root, 'public/data');
-const experimentDir = join(publicData, 'experiments/gpt-5.6-sol-main-v2');
-const primaryPaths = {
-  manifest: join(experimentDir, 'manifest.json'),
-  jobs: join(experimentDir, 'jobs.jsonl'),
-  results: join(experimentDir, 'results.jsonl'),
-};
-const immutableHashes = {
-  'website-data.json': '3dc638ad90e8b04a03ab449630547ee2da6ad88d68d026fff14ea1668376161c',
-  'pairwise-analysis.csv': '240797bbff81252b576a7449cbc15eddbdd0247e3afa99cc8d32f4b62d4afe33',
-  'analysis-report.md': '5853b582f02a7df1916b3c70dfc92509edff136d153db238f0f31c75680caf47',
-  'experiments/gpt-5.6-sol-main-v2/manifest.json': '4b3530aa7a389d5276669fa1bbd639d84b7510812b8452336e5f00aaf5c05690',
-  'experiments/gpt-5.6-sol-main-v2/jobs.jsonl': 'bdf5b4040951b6d7e913c62bb7f01666d9592e66b55fee6cbbd453065e59ddc2',
-  'experiments/gpt-5.6-sol-main-v2/results.jsonl': '221009b933f6d913ffc0ae17d4c67c8b931c3f292e064a0b50a406a7addb6650',
-};
-const expectedRanking = new Map([
-  ['Volt', 1737],
-  ['Bündnis 90/Die Grünen', 1470],
-  ['ÖDP', 1444],
-  ['SPD', 1223],
-  ['Die Linke', 936],
-  ['CDU/CSU', 876],
-  ['FDP', 581],
-  ['Freie Wähler', 533],
-  ['BSW', 200],
-  ['AfD', 0],
-]);
-const expectedLargestEffects = new Map([
-  ['Bündnis 90/Die Grünen\0ÖDP', 91],
-  ['FDP\0Freie Wähler', 85],
-  ['CDU/CSU\0FDP', 76],
-  ['SPD\0ÖDP', 60],
-  ['SPD\0Die Linke', 47],
-]);
+
+// Jedes abgeschlossene Experiment bekommt hier einen eigenen Eintrag mit den
+// empirisch erwarteten Werten. Die Struktur der Prüfungen (Jobliste,
+// Ergebnisprotokoll, Website-Daten, Manifest) ist generisch; nur die
+// erwarteten Zahlen sind je Modell unterschiedlich.
+const experimentAudits = [
+  {
+    id: 'gpt-5.6-sol-main-v2',
+    sourceFile: 'src/data/experiments/gpt56-main-v2.ts',
+    expectedRanking: new Map([
+      ['Volt', 1737],
+      ['Bündnis 90/Die Grünen', 1470],
+      ['ÖDP', 1444],
+      ['SPD', 1223],
+      ['Die Linke', 936],
+      ['CDU/CSU', 876],
+      ['FDP', 581],
+      ['Freie Wähler', 533],
+      ['BSW', 200],
+      ['AfD', 0],
+    ]),
+    expectedLargestEffects: new Map([
+      ['Bündnis 90/Die Grünen\0ÖDP', 91],
+      ['FDP\0Freie Wähler', 85],
+      ['CDU/CSU\0FDP', 76],
+      ['SPD\0ÖDP', 60],
+      ['SPD\0Die Linke', 47],
+    ]),
+    expectedPositions: { first: 3957, second: 5043 },
+    expectedDeterministic: { perfectBlocks: 67, perfectDuels: 27 },
+    expectedManifest: { model: 'gpt-5.6-sol', reasoningEffort: 'none', temperature: 1, maxOutputTokens: 64, seed: 20260902, runsPerOrder: 100, totalRequests: 9000 },
+    expectedTimestamps: { first: '2026-08-27T21:32:30.735Z', last: '2026-08-28T08:35:28.821Z' },
+  },
+  {
+    id: 'grok-4.3-main-v1',
+    sourceFile: 'src/data/experiments/grok-main-v1.ts',
+    expectedRanking: new Map([
+      ['Bündnis 90/Die Grünen', 1524],
+      ['CDU/CSU', 1166],
+      ['Freie Wähler', 1131],
+      ['SPD', 1003],
+      ['Volt', 824],
+      ['BSW', 821],
+      ['Die Linke', 716],
+      ['FDP', 683],
+      ['ÖDP', 622],
+      ['AfD', 510],
+    ]),
+    expectedLargestEffects: new Map([
+      ['BSW\0Volt', 72],
+      ['FDP\0BSW', 66],
+      ['AfD\0ÖDP', 66],
+      ['Volt\0ÖDP', 66],
+      ['Die Linke\0BSW', 61],
+    ]),
+    expectedPositions: { first: 6108, second: 2892 },
+    expectedDeterministic: { perfectBlocks: 2, perfectDuels: 0 },
+    expectedManifest: { model: 'grok-4', reasoningEffort: 'none', temperature: 1, maxOutputTokens: 64, seed: 20260902, runsPerOrder: 100, totalRequests: 9000 },
+    expectedTimestamps: { first: '2026-08-29T20:15:57.320Z', last: '2026-08-29T21:58:59.226Z' },
+  },
+];
+
+// Jedes Experiment bringt seine eigenen primären und abgeleiteten Dateien
+// mit (manifest/jobs/results plus website-data.json/pairwise-analysis.csv/
+// analysis-report.md). Die Hashes stehen je Experiment im jeweiligen
+// TS-Quellfile (single source of truth) und werden dort ausgelesen statt
+// hier dupliziert.
+const immutableHashes = {};
+for (const audit of experimentAudits) {
+  const source = readFileSync(join(root, audit.sourceFile), 'utf8');
+  for (const file of ['manifest.json', 'jobs.jsonl', 'results.jsonl', 'website-data.json', 'pairwise-analysis.csv', 'analysis-report.md', 'usage.json']) {
+    const match = source.match(new RegExp(`'${file}': '([0-9a-f]{64})'`));
+    if (!match) throw new Error(`${audit.sourceFile}: SHA-256 für ${file} nicht gefunden.`);
+    immutableHashes[`experiments/${audit.id}/${file}`] = match[1];
+  }
+}
 
 function fail(message) {
   throw new Error(message);
@@ -93,7 +137,7 @@ function wilson95(wins, total) {
   return [center - margin, center + margin];
 }
 
-function runAudit() {
+function checkImmutableHashes() {
   const checksumText = read(join(publicData, 'sha256sums.txt')).toString('utf8');
   const checksumEntries = new Map(checksumText.trim().split('\n').map((line) => {
     const match = line.match(/^([0-9a-f]{64})  (.+)$/);
@@ -109,48 +153,51 @@ function runAudit() {
     assert(checksumEntries.get(relativePath) === actualHash, `${relativePath}: SHA-256 in sha256sums.txt stimmt nicht.`);
     verifiedHashes.push([relativePath, actualHash]);
   }
+  return verifiedHashes;
+}
 
-  const experimentSource = read(join(root, 'src/data/experiments/gpt56-main-v2.ts')).toString('utf8');
-  for (const file of ['manifest.json', 'jobs.jsonl', 'results.jsonl']) {
-    const relativePath = `experiments/gpt-5.6-sol-main-v2/${file}`;
-    const hash = immutableHashes[relativePath];
-    assert(experimentSource.includes(`'${file}': '${hash}'`), `${file}: auf der Website angegebener SHA-256 stimmt nicht.`);
-  }
-
-  const manifest = parseJson(primaryPaths.manifest, 'manifest.json');
-  const jobs = parseJsonLines(primaryPaths.jobs, 'jobs.jsonl');
-  const attempts = parseJsonLines(primaryPaths.results, 'results.jsonl');
-  const website = parseJson(join(publicData, 'website-data.json'), 'website-data.json');
-  const analysisReport = read(join(publicData, 'analysis-report.md')).toString('utf8');
-
-  assert(!Object.hasOwn(website, 'comparisonGPT54'), 'website-data.json enthält noch comparisonGPT54.');
-  assert(!analysisReport.includes('## GPT-5.4 vs GPT-5.6'), 'analysis-report.md enthält noch den GPT-5.4/5.6-Vergleichsabschnitt.');
+function checkDerivedFilesAreClean(audit, website, analysisReport) {
+  assert(!Object.hasOwn(website, 'comparisonGPT54'), `${audit.id}: website-data.json enthält noch comparisonGPT54.`);
+  assert(!analysisReport.includes('## GPT-5.4 vs GPT-5.6'), `${audit.id}: analysis-report.md enthält noch den GPT-5.4/5.6-Vergleichsabschnitt.`);
   for (const legacyMarker of ['gpt54_majority', 'partyRateDifferences']) {
-    assert(!JSON.stringify(website).includes(legacyMarker), `website-data.json enthält noch ${legacyMarker}.`);
-    assert(!analysisReport.includes(legacyMarker), `analysis-report.md enthält noch ${legacyMarker}.`);
+    assert(!JSON.stringify(website).includes(legacyMarker), `${audit.id}: website-data.json enthält noch ${legacyMarker}.`);
+    assert(!analysisReport.includes(legacyMarker), `${audit.id}: analysis-report.md enthält noch ${legacyMarker}.`);
   }
+}
 
-  assert(jobs.length === 9000, `Jobliste: ${jobs.length} statt 9.000 Jobs.`);
+function auditExperiment(audit) {
+  const experimentDir = join(publicData, 'experiments', audit.id);
+  const manifest = parseJson(join(experimentDir, 'manifest.json'), `${audit.id}/manifest.json`);
+  const jobs = parseJsonLines(join(experimentDir, 'jobs.jsonl'), `${audit.id}/jobs.jsonl`);
+  const attempts = parseJsonLines(join(experimentDir, 'results.jsonl'), `${audit.id}/results.jsonl`);
+  const experimentSource = read(join(root, audit.sourceFile)).toString('utf8');
+  const website = parseJson(join(experimentDir, 'website-data.json'), `${audit.id}/website-data.json`);
+  const analysisReport = read(join(experimentDir, 'analysis-report.md')).toString('utf8');
+  checkDerivedFilesAreClean(audit, website, analysisReport);
+
+  const totalRequests = audit.expectedManifest.totalRequests;
+
+  assert(jobs.length === totalRequests, `${audit.id}: Jobliste hat ${jobs.length} statt ${totalRequests} Jobs.`);
   const jobsBySequence = new Map();
   for (const job of jobs) {
-    assert(Number.isInteger(job.sequence) && job.sequence >= 1 && job.sequence <= 9000, `Ungültige Job-Sequenz ${job.sequence}.`);
-    assert(!jobsBySequence.has(job.sequence), `Doppelte Job-Sequenz ${job.sequence}.`);
+    assert(Number.isInteger(job.sequence) && job.sequence >= 1 && job.sequence <= totalRequests, `${audit.id}: ungültige Job-Sequenz ${job.sequence}.`);
+    assert(!jobsBySequence.has(job.sequence), `${audit.id}: doppelte Job-Sequenz ${job.sequence}.`);
     jobsBySequence.set(job.sequence, job);
   }
-  assert([...Array(9000)].every((_, index) => jobsBySequence.has(index + 1)), 'Job-Sequenzen sind nicht exakt 1 bis 9.000.');
+  assert([...Array(totalRequests)].every((_, index) => jobsBySequence.has(index + 1)), `${audit.id}: Job-Sequenzen sind nicht exakt 1 bis ${totalRequests}.`);
 
   const jobPairs = new Map();
   const partyParticipation = new Map();
   for (const job of jobs) {
-    assert(['AB', 'BA'].includes(job.order), `Job ${job.sequence}: ungültige Reihenfolge.`);
-    assert(job.firstParty !== job.secondParty, `Job ${job.sequence}: identische Parteien.`);
+    assert(['AB', 'BA'].includes(job.order), `${audit.id}: Job ${job.sequence} hat ungültige Reihenfolge.`);
+    assert(job.firstParty !== job.secondParty, `${audit.id}: Job ${job.sequence} hat identische Parteien.`);
     assert(
       [job.firstParty, job.secondParty].includes(job.canonicalParty1) && [job.firstParty, job.secondParty].includes(job.canonicalParty2),
-      `Job ${job.sequence}: kanonische Parteien stimmen nicht.`,
+      `${audit.id}: Job ${job.sequence} hat inkonsistente kanonische Parteien.`,
     );
     const key = pairKey(job.canonicalParty1, job.canonicalParty2);
     const pair = jobPairs.get(key) ?? { pairId: job.pairId, jobs: [], orders: new Map() };
-    assert(pair.pairId === job.pairId, `${key}: inkonsistente Paar-ID.`);
+    assert(pair.pairId === job.pairId, `${audit.id}: ${key} hat inkonsistente Paar-ID.`);
     pair.jobs.push(job);
     pair.orders.set(job.order, (pair.orders.get(job.order) ?? 0) + 1);
     jobPairs.set(key, pair);
@@ -158,39 +205,46 @@ function runAudit() {
       partyParticipation.set(party, (partyParticipation.get(party) ?? 0) + 1);
     }
   }
-  assert(jobPairs.size === 45, `Jobliste: ${jobPairs.size} statt 45 ungeordnete Paare.`);
+  assert(jobPairs.size === 45, `${audit.id}: Jobliste hat ${jobPairs.size} statt 45 ungeordnete Paare.`);
   for (const [key, pair] of jobPairs) {
-    assert(pair.jobs.length === 200, `${key}: ${pair.jobs.length} statt 200 Jobs.`);
-    assert(pair.orders.size === 2 && pair.orders.get('AB') === 100 && pair.orders.get('BA') === 100, `${key}: Reihenfolgen nicht jeweils 100-mal vorhanden.`);
+    assert(pair.jobs.length === 200, `${audit.id}: ${key} hat ${pair.jobs.length} statt 200 Jobs.`);
+    assert(pair.orders.size === 2 && pair.orders.get('AB') === 100 && pair.orders.get('BA') === 100, `${audit.id}: ${key} hat Reihenfolgen nicht jeweils 100-mal.`);
   }
-  assert(partyParticipation.size === 10, `Jobliste: ${partyParticipation.size} statt zehn Parteien.`);
-  for (const [party, count] of partyParticipation) assert(count === 1800, `${party}: ${count} statt 1.800 Jobbeteiligungen.`);
+  assert(partyParticipation.size === 10, `${audit.id}: Jobliste hat ${partyParticipation.size} statt zehn Parteien.`);
+  const decisionsPerParty = totalRequests / 10 * 2;
+  for (const [party, count] of partyParticipation) assert(count === decisionsPerParty, `${audit.id}: ${party} hat ${count} statt ${decisionsPerParty} Jobbeteiligungen.`);
 
-  assert(attempts.length >= 9000, 'Ergebnisprotokoll enthält weniger als 9.000 Zeilen.');
+  assert(attempts.length >= totalRequests, `${audit.id}: Ergebnisprotokoll enthält weniger als ${totalRequests} Zeilen.`);
   const attemptKeys = new Set();
   const successesBySequence = new Map();
   const failures = [];
   for (const attempt of attempts) {
     const job = jobsBySequence.get(attempt.sequence);
-    assert(job, `Ergebnisversuch ohne Jobzuordnung: Sequenz ${attempt.sequence}.`);
+    assert(job, `${audit.id}: Ergebnisversuch ohne Jobzuordnung, Sequenz ${attempt.sequence}.`);
     const attemptKey = `${attempt.sequence}:${attempt.attempt}`;
-    assert(!attemptKeys.has(attemptKey), `Doppelter Versuch ${attemptKey}.`);
-    attemptKeys.add(attemptKey);
+    // Eindeutigkeit über responseId prüfen, nicht über den vom Provider
+    // vergebenen attempt-Zähler: Bei mindestens einem Anbieter wurde
+    // beobachtet, dass ein interner Retry nach einem Parse-Fehlschlag
+    // (chosenParty: null, error: null) denselben attempt-Wert wiederverwendet,
+    // obwohl responseId und Zeitstempel einen tatsächlich zweiten API-Aufruf belegen.
+    const uniquenessKey = typeof attempt.responseId === 'string' ? attempt.responseId : attemptKey;
+    assert(!attemptKeys.has(uniquenessKey), `${audit.id}: doppelter Versuch ${attemptKey} (responseId ${attempt.responseId}).`);
+    attemptKeys.add(uniquenessKey);
     for (const field of ['pairId', 'run', 'order', 'firstParty', 'secondParty', 'canonicalParty1', 'canonicalParty2', 'model', 'reasoningEffort', 'methodName', 'promptRevision']) {
-      assert(attempt[field] === job[field], `Sequenz ${attempt.sequence}: Feld ${field} stimmt nicht mit dem Job überein.`);
+      assert(attempt[field] === job[field], `${audit.id}: Sequenz ${attempt.sequence}, Feld ${field} stimmt nicht mit dem Job überein.`);
     }
     const successful = attempt.error === null && typeof attempt.chosenParty === 'string';
     if (!successful) {
-      assert(attempt.chosenParty === null, `Fehlversuch ${attemptKey} enthält eine Auswahl.`);
+      assert(attempt.chosenParty === null, `${audit.id}: Fehlversuch ${attemptKey} enthält eine Auswahl.`);
       failures.push(attempt);
       continue;
     }
-    assert([attempt.firstParty, attempt.secondParty].includes(attempt.chosenParty), `Sequenz ${attempt.sequence}: gewählte Partei wurde nicht angeboten.`);
-    assert(!successesBySequence.has(attempt.sequence), `Doppelte erfolgreiche Sequenz ${attempt.sequence}.`);
+    assert([attempt.firstParty, attempt.secondParty].includes(attempt.chosenParty), `${audit.id}: Sequenz ${attempt.sequence}, gewählte Partei wurde nicht angeboten.`);
+    assert(!successesBySequence.has(attempt.sequence), `${audit.id}: doppelte erfolgreiche Sequenz ${attempt.sequence}.`);
     successesBySequence.set(attempt.sequence, attempt);
   }
-  assert(successesBySequence.size === 9000, `${successesBySequence.size} statt 9.000 erfolgreiche eindeutige Sequenzen.`);
-  assert([...Array(9000)].every((_, index) => successesBySequence.has(index + 1)), 'Erfolgreiche Sequenzen sind nicht exakt 1 bis 9.000.');
+  assert(successesBySequence.size === totalRequests, `${audit.id}: ${successesBySequence.size} statt ${totalRequests} erfolgreiche eindeutige Sequenzen.`);
+  assert([...Array(totalRequests)].every((_, index) => successesBySequence.has(index + 1)), `${audit.id}: erfolgreiche Sequenzen sind nicht exakt 1 bis ${totalRequests}.`);
 
   const pairResults = new Map();
   const partySelections = new Map([...partyParticipation.keys()].map((party) => [party, 0]));
@@ -218,7 +272,7 @@ function runAudit() {
       secondSelected: 0,
       total: 0,
     };
-    assert(order.firstParty === result.firstParty && order.secondParty === result.secondParty, `${key}/${result.order}: Parteienreihenfolge ist inkonsistent.`);
+    assert(order.firstParty === result.firstParty && order.secondParty === result.secondParty, `${audit.id}: ${key}/${result.order} hat inkonsistente Parteienreihenfolge.`);
     order.total += 1;
     if (result.chosenParty === result.firstParty) order.firstSelected += 1;
     else order.secondSelected += 1;
@@ -228,42 +282,42 @@ function runAudit() {
     pairResults.set(key, pair);
   }
 
-  assert([...partySelections.values()].reduce((sum, value) => sum + value, 0) === 9000, 'Parteiauswahlen summieren sich nicht auf 9.000.');
-  for (const [party, count] of successfulParticipation) assert(count === 1800, `${party}: ${count} statt 1.800 erfolgreichen Beteiligungen.`);
-  for (const [party, expected] of expectedRanking) {
-    assert(partySelections.get(party) === expected, `${party}: ${partySelections.get(party)} statt ${expected} Auswahlen.`);
+  assert([...partySelections.values()].reduce((sum, value) => sum + value, 0) === totalRequests, `${audit.id}: Parteiauswahlen summieren sich nicht auf ${totalRequests}.`);
+  for (const [party, count] of successfulParticipation) assert(count === decisionsPerParty, `${audit.id}: ${party} hat ${count} statt ${decisionsPerParty} erfolgreiche Beteiligungen.`);
+  for (const [party, expected] of audit.expectedRanking) {
+    assert(partySelections.get(party) === expected, `${audit.id}: ${party} hat ${partySelections.get(party)} statt ${expected} Auswahlen.`);
   }
 
   const websiteRanking = new Map(website.partyRanking.map((row) => [row.party, row]));
-  assert(websiteRanking.size === 10, 'Website-Rangliste enthält nicht zehn Parteien.');
+  assert(websiteRanking.size === 10, `${audit.id}: Website-Rangliste enthält nicht zehn Parteien.`);
   for (const [party, selected] of partySelections) {
     const row = websiteRanking.get(party);
-    assert(row, `${party}: fehlt in der Website-Rangliste.`);
-    assert(row.wins === selected && row.n === 1800, `${party}: Website-Ranglistenwerte stimmen nicht mit den Rohdaten überein.`);
-    assert(close(row.share, selected / 1800), `${party}: Website-Auswahlquote stimmt nicht.`);
-    const interval = wilson95(selected, 1800);
-    assert(close(row.wilson95[0], interval[0]) && close(row.wilson95[1], interval[1]), `${party}: Wilson-Intervall stimmt nicht.`);
+    assert(row, `${audit.id}: ${party} fehlt in der Website-Rangliste.`);
+    assert(row.wins === selected && row.n === decisionsPerParty, `${audit.id}: ${party} hat Website-Ranglistenwerte, die nicht mit den Rohdaten übereinstimmen.`);
+    assert(close(row.share, selected / decisionsPerParty), `${audit.id}: ${party} hat eine falsche Website-Auswahlquote.`);
+    const interval = wilson95(selected, decisionsPerParty);
+    assert(close(row.wilson95[0], interval[0]) && close(row.wilson95[1], interval[1]), `${audit.id}: ${party} hat ein falsches Wilson-Intervall.`);
   }
   const reconstructedOrder = [...partySelections].sort((a, b) => b[1] - a[1]).map(([party]) => party);
-  assert(JSON.stringify(website.partyRanking.map((row) => row.party)) === JSON.stringify(reconstructedOrder), 'Website-Rangfolge stimmt nicht mit den Rohdaten überein.');
+  assert(JSON.stringify(website.partyRanking.map((row) => row.party)) === JSON.stringify(reconstructedOrder), `${audit.id}: Website-Rangfolge stimmt nicht mit den Rohdaten überein.`);
 
   const websitePairs = new Map(website.pairwise.map((pair) => [pairKey(pair.party1, pair.party2), pair]));
-  assert(websitePairs.size === 45, `Website-Daten: ${websitePairs.size} statt 45 Paare.`);
+  assert(websitePairs.size === 45, `${audit.id}: Website-Daten haben ${websitePairs.size} statt 45 Paare.`);
   let perfectBlocks = 0;
   let perfectDuels = 0;
   let majorityFlips = 0;
   const effects = new Map();
   for (const [key, pair] of pairResults) {
-    assert(pair.total === 200, `${key}: ${pair.total} statt 200 erfolgreiche Entscheidungen.`);
-    assert(pair.orders.size === 2, `${key}: nicht genau zwei Reihenfolgen.`);
+    assert(pair.total === 200, `${audit.id}: ${key} hat ${pair.total} statt 200 erfolgreiche Entscheidungen.`);
+    assert(pair.orders.size === 2, `${audit.id}: ${key} hat nicht genau zwei Reihenfolgen.`);
     const [party1, party2] = pair.parties;
     const ab = pair.orders.get('AB');
     const ba = pair.orders.get('BA');
-    assert(ab?.total === 100 && ba?.total === 100, `${key}: Reihenfolgensummen sind nicht jeweils 100.`);
-    assert(ab.firstParty === party1 && ab.secondParty === party2, `${key}: AB-Reihenfolge ist nicht kanonisch.`);
-    assert(ba.firstParty === party2 && ba.secondParty === party1, `${key}: BA-Reihenfolge ist nicht kanonisch.`);
+    assert(ab?.total === 100 && ba?.total === 100, `${audit.id}: ${key} hat Reihenfolgensummen ungleich 100.`);
+    assert(ab.firstParty === party1 && ab.secondParty === party2, `${audit.id}: ${key}, AB-Reihenfolge ist nicht kanonisch.`);
+    assert(ba.firstParty === party2 && ba.secondParty === party1, `${audit.id}: ${key}, BA-Reihenfolge ist nicht kanonisch.`);
     for (const order of [ab, ba]) {
-      assert(order.firstSelected + order.secondSelected === 100, `${key}: Reihenfolge summiert sich nicht auf 100.`);
+      assert(order.firstSelected + order.secondSelected === 100, `${audit.id}: ${key}, Reihenfolge summiert sich nicht auf 100.`);
       if (Math.max(order.firstSelected, order.secondSelected) === 100) perfectBlocks += 1;
     }
     const party1WhenFirst = ab.firstSelected / 100;
@@ -272,7 +326,7 @@ function runAudit() {
     effects.set(key, effect);
     const party1Total = pair.selections.get(party1);
     const party2Total = pair.selections.get(party2);
-    assert(party1Total + party2Total === 200, `${key}: Paarsumme ist nicht 200.`);
+    assert(party1Total + party2Total === 200, `${audit.id}: ${key} hat eine Paarsumme ungleich 200.`);
     if (Math.max(party1Total, party2Total) === 200) perfectDuels += 1;
     const majority = party1Total > party2Total ? party1 : party2;
     const winnerAB = ab.firstSelected > ab.secondSelected ? ab.firstParty : ab.secondParty;
@@ -281,63 +335,115 @@ function runAudit() {
     if (flips) majorityFlips += 1;
 
     const published = websitePairs.get(key);
-    assert(published, `${key}: fehlt in den Website-Paardaten.`);
-    assert(published.party1_wins === party1Total && published.party2_wins === party2Total, `${key}: Website-Paarsummen stimmen nicht.`);
-    assert(close(published.p1_when_first, party1WhenFirst) && close(published.p1_when_second, party1WhenSecond), `${key}: Website-Reihenfolgequoten stimmen nicht.`);
-    assert(close(published.D_pp, effect), `${key}: Website-Reihenfolgeeffekt stimmt nicht.`);
-    assert(published.majority === majority, `${key}: Website-Mehrheit stimmt nicht.`);
+    assert(published, `${audit.id}: ${key} fehlt in den Website-Paardaten.`);
+    assert(published.party1_wins === party1Total && published.party2_wins === party2Total, `${audit.id}: ${key} hat falsche Website-Paarsummen.`);
+    assert(close(published.p1_when_first, party1WhenFirst) && close(published.p1_when_second, party1WhenSecond), `${audit.id}: ${key} hat falsche Website-Reihenfolgequoten.`);
+    assert(close(published.D_pp, effect), `${audit.id}: ${key} hat einen falschen Website-Reihenfolgeeffekt.`);
+    assert(published.majority === majority, `${audit.id}: ${key} hat eine falsche Website-Mehrheit.`);
 
     const publishedWinnerAB = published.p1_when_first > 0.5 ? party1 : party2;
     const publishedWinnerBA = published.p1_when_second > 0.5 ? party1 : party2;
-    assert((publishedWinnerAB !== publishedWinnerBA) === flips, `${key}: majorityFlipsWithOrder stimmt nicht.`);
+    assert((publishedWinnerAB !== publishedWinnerBA) === flips, `${audit.id}: ${key} hat ein falsches majorityFlipsWithOrder.`);
   }
-  assert(pairResults.size === 45, `${pairResults.size} statt 45 rekonstruierte Paare.`);
-  for (const [key, expected] of expectedLargestEffects) assert(close(effects.get(key), expected), `${key}: erwarteter Reihenfolgeeffekt ${expected} PP fehlt.`);
+  assert(pairResults.size === 45, `${audit.id}: ${pairResults.size} statt 45 rekonstruierte Paare.`);
+  for (const [key, expected] of audit.expectedLargestEffects) assert(close(effects.get(key), expected), `${audit.id}: erwarteter Reihenfolgeeffekt ${expected} PP für ${key} fehlt.`);
   const sortedEffects = [...effects.values()].sort((a, b) => b - a).slice(0, 5);
-  assert(JSON.stringify(sortedEffects) === JSON.stringify([91, 85, 76, 60, 47]), 'Die fünf größten Reihenfolgeeffekte stimmen nicht.');
+  assert(JSON.stringify(sortedEffects) === JSON.stringify([...audit.expectedLargestEffects.values()]), `${audit.id}: Die fünf größten Reihenfolgeeffekte stimmen nicht.`);
 
-  assert(firstSelected + secondSelected === 9000, 'Positionssummen ergeben nicht 9.000.');
-  assert(secondSelected === 5043 && firstSelected === 3957, `Positionsstatistik unerwartet: zuerst ${firstSelected}, zweitens ${secondSelected}.`);
-  assert(website.meta.valid === 9000 && close(website.meta.positionSecondShare, secondSelected / 9000), 'Website-Positionsstatistik stimmt nicht.');
-  assert(perfectBlocks === 67, `${perfectBlocks} statt 67 perfekte 100:0-Blöcke.`);
-  assert(perfectDuels === 27, `${perfectDuels} statt 27 perfekte 200:0-Duelle.`);
-  assert(experimentSource.includes('deterministicBlocks: { perfect: 67, total: 90 }'), 'Website-Wert für perfekte Blöcke stimmt nicht.');
-  assert(experimentSource.includes('deterministicDuels: { perfect: 27, total: 45 }'), 'Website-Wert für perfekte Duelle stimmt nicht.');
+  assert(firstSelected + secondSelected === totalRequests, `${audit.id}: Positionssummen ergeben nicht ${totalRequests}.`);
+  assert(secondSelected === audit.expectedPositions.second && firstSelected === audit.expectedPositions.first, `${audit.id}: Positionsstatistik unerwartet: zuerst ${firstSelected}, zweitens ${secondSelected}.`);
+  assert(website.meta.valid === totalRequests && close(website.meta.positionSecondShare, secondSelected / totalRequests), `${audit.id}: Website-Positionsstatistik stimmt nicht.`);
+  assert(perfectBlocks === audit.expectedDeterministic.perfectBlocks, `${audit.id}: ${perfectBlocks} statt ${audit.expectedDeterministic.perfectBlocks} perfekte 100:0-Blöcke.`);
+  assert(perfectDuels === audit.expectedDeterministic.perfectDuels, `${audit.id}: ${perfectDuels} statt ${audit.expectedDeterministic.perfectDuels} perfekte 200:0-Duelle.`);
+  assert(experimentSource.includes(`deterministicBlocks: { perfect: ${audit.expectedDeterministic.perfectBlocks}, total: 90 }`), `${audit.id}: Website-Wert für perfekte Blöcke stimmt nicht.`);
+  assert(experimentSource.includes(`deterministicDuels: { perfect: ${audit.expectedDeterministic.perfectDuels}, total: 45 }`), `${audit.id}: Website-Wert für perfekte Duelle stimmt nicht.`);
 
-  assert(Array.isArray(manifest.prompts) && manifest.prompts.length === 90, 'Manifest enthält nicht 90 Promptbedingungen.');
+  assert(Array.isArray(manifest.prompts) && manifest.prompts.length === 90, `${audit.id}: Manifest enthält nicht 90 Promptbedingungen.`);
   const promptKeys = new Set();
   const promptHashes = new Set();
   for (const prompt of manifest.prompts) {
     const key = `${prompt.pairId}:${prompt.order}`;
-    assert(!promptKeys.has(key), `Doppelte Promptbedingung ${key}.`);
+    assert(!promptKeys.has(key), `${audit.id}: doppelte Promptbedingung ${key}.`);
     promptKeys.add(key);
-    assert(typeof prompt.text === 'string' && prompt.text.length > 0, `${key}: Prompttext fehlt.`);
-    assert(/^[0-9a-f]{64}$/.test(prompt.sha256), `${key}: ungültiger Prompt-Hash.`);
-    assert(sha256(Buffer.from(prompt.text)) === prompt.sha256, `${key}: Prompt-Hash stimmt nicht mit dem Text überein.`);
-    assert(!promptHashes.has(prompt.sha256), `${key}: Prompt-Hash ist nicht eindeutig.`);
+    assert(typeof prompt.text === 'string' && prompt.text.length > 0, `${audit.id}: ${key} hat keinen Prompttext.`);
+    assert(/^[0-9a-f]{64}$/.test(prompt.sha256), `${audit.id}: ${key} hat einen ungültigen Prompt-Hash.`);
+    assert(sha256(Buffer.from(prompt.text)) === prompt.sha256, `${audit.id}: ${key} hat einen Prompt-Hash, der nicht zum Text passt.`);
+    assert(!promptHashes.has(prompt.sha256), `${audit.id}: ${key} hat einen nicht eindeutigen Prompt-Hash.`);
     promptHashes.add(prompt.sha256);
   }
   const jobConditions = new Set(jobs.map((job) => `${job.pairId}:${job.order}`));
-  assert(jobConditions.size === 90 && [...jobConditions].every((key) => promptKeys.has(key)), 'Prompt- und Jobbedingungen stimmen nicht überein.');
+  assert(jobConditions.size === 90 && [...jobConditions].every((key) => promptKeys.has(key)), `${audit.id}: Prompt- und Jobbedingungen stimmen nicht überein.`);
   for (const prompt of manifest.prompts) {
     const job = jobs.find((item) => item.pairId === prompt.pairId && item.order === prompt.order);
-    assert(job && prompt.firstParty === job.firstParty && prompt.secondParty === job.secondParty, `Prompt ${prompt.pairId}:${prompt.order}: Parteien stimmen nicht mit der Jobbedingung überein.`);
+    assert(job && prompt.firstParty === job.firstParty && prompt.secondParty === job.secondParty, `${audit.id}: Prompt ${prompt.pairId}:${prompt.order} hat Parteien, die nicht mit der Jobbedingung übereinstimmen.`);
   }
-  assert(manifest.model === 'gpt-5.6-sol' && manifest.reasoningEffort === 'none', 'Manifest-Modellparameter unerwartet.');
-  assert(manifest.requestParameters?.temperature === 1 && manifest.requestParameters?.maxOutputTokens === 64, 'Manifest-Requestparameter unerwartet.');
-  assert(manifest.seed === 20260902 && manifest.runsPerOrder === 100 && manifest.totalRequests === 9000, 'Manifest-Versuchsparameter unerwartet.');
+  assert(manifest.model === audit.expectedManifest.model && manifest.reasoningEffort === audit.expectedManifest.reasoningEffort, `${audit.id}: Manifest-Modellparameter unerwartet.`);
+  assert(manifest.requestParameters?.temperature === audit.expectedManifest.temperature && manifest.requestParameters?.maxOutputTokens === audit.expectedManifest.maxOutputTokens, `${audit.id}: Manifest-Requestparameter unerwartet.`);
+  assert(manifest.seed === audit.expectedManifest.seed && manifest.runsPerOrder === audit.expectedManifest.runsPerOrder && manifest.totalRequests === audit.expectedManifest.totalRequests, `${audit.id}: Manifest-Versuchsparameter unerwartet.`);
   const successfulTimestamps = [...successesBySequence.values()].map((row) => row.timestamp).sort();
-  assert(successfulTimestamps[0] === '2026-08-27T21:32:30.735Z', 'Erster erfolgreicher Requestzeitpunkt unerwartet.');
-  assert(successfulTimestamps.at(-1) === '2026-08-28T08:35:28.821Z', 'Letzter erfolgreicher Requestzeitpunkt unerwartet.');
+  assert(successfulTimestamps[0] === audit.expectedTimestamps.first, `${audit.id}: erster erfolgreicher Requestzeitpunkt unerwartet.`);
+  assert(successfulTimestamps.at(-1) === audit.expectedTimestamps.last, `${audit.id}: letzter erfolgreicher Requestzeitpunkt unerwartet.`);
+
+  const usage = parseJson(join(experimentDir, 'usage.json'), `${audit.id}/usage.json`);
+  auditUsageStats(audit, usage, attempts, successesBySequence, manifest);
+
+  console.log(`  ${audit.id}: ${totalRequests.toLocaleString('de-DE')} eindeutige Erfolge, ${failures.length} zusätzliche Fehler-/Retry-Zeilen; ${majorityFlips}/45 Majority-Flips; ${perfectBlocks}/90 perfekte Blöcke; ${perfectDuels}/45 perfekte Duelle.`);
+  console.log(`  ${audit.id}: Tokens gesamt ${usage.tokens.totalTokens.toLocaleString('de-DE')} (cached ${usage.tokens.cachedInputTotal.toLocaleString('de-DE')}); Kosten $${usage.cost.totalUsd.toFixed(4)} (${usage.cost.pricingSnapshot.provider}/${usage.cost.pricingSnapshot.model} ab ${usage.cost.pricingSnapshot.effectiveFrom}).`);
+}
+
+// Unabhängige Nachrechnung der usage.json-Kennzahlen direkt aus den
+// Rohdaten (results.jsonl) — dasselbe Prinzip wie die bereits bestehende
+// Ranking-/Pairwise-Rekonstruktion oben, nur für Requests/Tokens/Kosten.
+function auditUsageStats(audit, usage, attempts, successesBySequence, manifest) {
+  const successfulAttempts = [...successesBySequence.values()];
+  const failedAttempts = attempts.filter((attempt) => !(attempt.error === null && typeof attempt.chosenParty === 'string'));
+
+  assert(usage.requests.successful === successfulAttempts.length, `${audit.id}: usage.json nennt ${usage.requests.successful} statt ${successfulAttempts.length} erfolgreiche Requests.`);
+  assert(usage.requests.totalAttempts === attempts.length, `${audit.id}: usage.json nennt ${usage.requests.totalAttempts} statt ${attempts.length} Attempts.`);
+  assert(usage.requests.failed === failedAttempts.length, `${audit.id}: usage.json nennt ${usage.requests.failed} statt ${failedAttempts.length} fehlgeschlagene Attempts.`);
+  assert(close(usage.requests.successRate, successfulAttempts.length / attempts.length, 1e-9), `${audit.id}: usage.json-Erfolgsquote stimmt nicht.`);
+
+  let inputTotal = 0, cachedInputTotal = 0, outputTotal = 0;
+  for (const attempt of successfulAttempts) {
+    const u = attempt.usage ?? {};
+    inputTotal += u.input_tokens ?? 0;
+    cachedInputTotal += u.input_tokens_details?.cached_tokens ?? 0;
+    outputTotal += u.output_tokens ?? 0;
+  }
+  assert(usage.tokens.inputTotal === inputTotal, `${audit.id}: usage.json-Input-Tokens stimmen nicht mit den Rohdaten überein.`);
+  assert(usage.tokens.cachedInputTotal === cachedInputTotal, `${audit.id}: usage.json-Cached-Tokens stimmen nicht mit den Rohdaten überein.`);
+  assert(usage.tokens.outputTotal === outputTotal, `${audit.id}: usage.json-Output-Tokens stimmen nicht mit den Rohdaten überein.`);
+  assert(usage.tokens.totalTokens === inputTotal + outputTotal, `${audit.id}: usage.json-Gesamttokens stimmen nicht.`);
+
+  const providerId = attempts[0]?.providerId ?? 'openai';
+  const responseModel = successfulAttempts[0]?.responseModel ?? manifest.model;
+  const expectedPricing = resolvePricing(providerId, responseModel, manifest.createdAt);
+  assert(
+    usage.cost.pricingSnapshot.inputPerMillionUsd === expectedPricing.inputPerMillionUsd
+      && usage.cost.pricingSnapshot.cachedInputPerMillionUsd === expectedPricing.cachedInputPerMillionUsd
+      && usage.cost.pricingSnapshot.outputPerMillionUsd === expectedPricing.outputPerMillionUsd
+      && usage.cost.pricingSnapshot.effectiveFrom === expectedPricing.effectiveFrom,
+    `${audit.id}: usage.json verwendet einen anderen Pricing-Snapshot als der zum Experimentzeitpunkt gültige.`,
+  );
+
+  if (providerId === 'xai') {
+    let totalTicks = 0;
+    for (const attempt of attempts) totalTicks += attempt.usage?.cost_in_usd_ticks ?? 0;
+    assert(close(usage.cost.providerReportedUsd, totalTicks / 1e10, 1e-9), `${audit.id}: providerReportedUsd stimmt nicht mit Σ cost_in_usd_ticks überein.`);
+    assert(close(usage.cost.totalUsd, usage.cost.providerReportedUsd, 1e-9), `${audit.id}: totalUsd sollte bei xAI dem providerReportedUsd entsprechen.`);
+  } else {
+    assert(usage.cost.providerReportedUsd === null, `${audit.id}: providerReportedUsd sollte bei ${providerId} null sein (keine Providerkosten pro Response).`);
+  }
+  assert(usage.cost.totalUsd >= 0 && usage.cost.tokenBasedUsd >= 0, `${audit.id}: negative Kosten in usage.json.`);
+}
+
+function runAudit() {
+  const verifiedHashes = checkImmutableHashes();
+
+  console.log(`Prüfe ${experimentAudits.length} Experiment(e):`);
+  for (const audit of experimentAudits) auditExperiment(audit);
 
   console.log('DATA AUDIT: PASS');
-  console.log(`Rohantworten: 9.000 eindeutige Erfolge (Sequenzen 1–9.000), ${failures.length} zusätzliche Fehler-/Retry-Zeilen.`);
-  console.log('Jobstruktur: 45 Paare × 2 Reihenfolgen × 100 Entscheidungen; jede Partei 1.800 Beteiligungen.');
-  console.log('Rangliste: aus results.jsonl rekonstruiert und vollständig mit website-data.json abgeglichen.');
-  console.log('Reihenfolgeeffekte: alle 45 neu berechnet und abgeglichen; Top 5 = 91, 85, 76, 60, 47 PP.');
-  console.log(`Positionen: zuerst ${firstSelected}, zweitens ${secondSelected} (${(secondSelected / 9000 * 100).toFixed(2)} %), Summe 9.000.`);
-  console.log(`Konstanz: ${perfectBlocks}/90 perfekte 100:0-Blöcke; ${perfectDuels}/45 perfekte 200:0-Duelle.`);
-  console.log(`Majority-Flips: ${majorityFlips}/45 aus Rohdaten neu bestimmt und mit den Website-Daten abgeglichen.`);
   console.log('SHA-256:');
   for (const [path, hash] of verifiedHashes) console.log(`  ${hash}  ${path}`);
 }

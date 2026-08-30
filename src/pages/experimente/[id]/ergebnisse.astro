@@ -1,0 +1,27 @@
+---
+import PartyRanking from '../../../components/PartyRanking.astro';
+import PositionBias from '../../../components/PositionBias.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { experiments } from '../../../lib/experiments';
+import { formatInteger } from '../../../lib/format';
+export function getStaticPaths() { return experiments.map((experiment) => ({ params: { id: experiment.id }, props: { experiment } })); }
+const { experiment } = Astro.props;
+const effects = [...experiment.results.pairs].sort((a,b) => b.sensitivityPercentagePoints - a.sensitivityPercentagePoints).slice(0,5);
+const strongestEffect = effects[0]!;
+const { firstSelected, secondSelected, total } = experiment.results.positionBias;
+const firstAhead = firstSelected > secondSelected;
+const tied = firstSelected === secondSelected;
+const positionHeading = tied
+  ? 'Beide Positionen wurden gleich häufig ausgewählt'
+  : `Die ${firstAhead ? 'erste' : 'zweite'} Position lag im Mittel vorn`;
+const leadingCount = tied ? firstSelected : (firstAhead ? firstSelected : secondSelected);
+const leadingLabel = firstAhead ? 'erste' : 'zweite';
+---
+<BaseLayout title={`Ergebnisse – ${experiment.model.name}`} description={`Ranking, Positionsbias und Reihenfolgeeffekte im ${experiment.title}.`}>
+  <section class="page"><div class="container"><p class="eyebrow">{experiment.title}</p><h1>Ergebnisse aus {formatInteger(experiment.parameters.totalRequests)} Paarentscheidungen</h1><p class="lede">Die Auswahlquoten beschreiben ausschließlich, wie oft eine Partei in diesem Versuchsaufbau ausgewählt wurde. Sie sind keine Wahlumfrage und kein Stimmenanteil.</p></div></section>
+  <section class="section section--surface"><div class="container"><p class="eyebrow">Deskriptives Ranking</p><h2>Auswahlquote im Paarvergleich</h2><PartyRanking ranking={experiment.results.ranking} experimentId={experiment.id} /></div></section>
+  <section class="section"><div class="container"><p class="eyebrow">Positionseffekt</p><h2>{positionHeading}</h2><p class="lede">{tied ? <>Jeweils {formatInteger(firstSelected)} von {formatInteger(total)} Entscheidungen entfielen auf die erst- bzw. zweitgenannte Partei.</> : <>{formatInteger(leadingCount)} von {formatInteger(total)} Entscheidungen entfielen auf die {leadingLabel} genannte Partei.</>} Dieser Durchschnitt verdeckt wesentlich stärkere Effekte einzelner Paarungen.</p><PositionBias result={experiment.results.positionBias} /></div></section>
+  <section class="section section--surface"><div class="container"><p class="eyebrow">Größte Reihenfolgeeffekte</p><h2>Bis zu {strongestEffect.sensitivityPercentagePoints.toLocaleString('de-DE')} Prozentpunkte Unterschied</h2><div class="effect-list">{effects.map((pair) => <a href={`/experimente/${experiment.id}/duelle/${pair.id}/`}><span>{pair.parties[0]} / {pair.parties[1]}</span><strong>D = {pair.sensitivityPercentagePoints.toLocaleString('de-DE')} PP</strong></a>)}</div><div class="button-row"><a class="button" href={`/experimente/${experiment.id}/duelle/`}>Vollständige Duellmatrix</a></div></div></section>
+  <section class="section"><div class="container"><p class="eyebrow">Konstanz innerhalb des Experiments</p><h2>Viele Bedingungen waren vollständig einheitlich</h2><div class="grid grid--3"><div class="card"><p class="card-label">100:0-Blöcke</p><p class="card-value">{experiment.results.deterministicBlocks.perfect} / {experiment.results.deterministicBlocks.total}</p><p class="card-copy">Ein Block sind 100 Wiederholungen derselben Paarung in derselben Reihenfolge.</p></div><div class="card"><p class="card-label">200:0-Duelle</p><p class="card-value">{experiment.results.deterministicDuels.perfect} / {experiment.results.deterministicDuels.total}</p><p class="card-copy">Ein vollständiges Duell umfasst beide Reihenfolgen mit jeweils 100 Wiederholungen.</p></div><div class="card"><p class="card-label">Bradley–Terry</p><p class="card-value">Ridge λ = 1</p><p class="card-copy">Regularisierte Parameter relativer Stärke im Paarvergleich – keine politische Zustimmung.</p></div></div></div></section>
+</BaseLayout>
+<style>.effect-list{margin-top:2rem;border-top:1px solid var(--line)}.effect-list a{display:flex;justify-content:space-between;gap:1rem;padding:1rem .5rem;margin-inline:-.5rem;border-radius:var(--radius);border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;transition:background-color .18s var(--ease)}.effect-list a:hover{background:var(--surface-soft)}.effect-list a:hover span{text-decoration:underline}.effect-list strong{white-space:nowrap}@media(max-width:520px){.effect-list a{flex-direction:column;gap:.15rem}}</style>

@@ -2,14 +2,14 @@
 import { formatInteger, formatPercent } from '../lib/format';
 import { partySlug } from '../lib/parties';
 import type { PartyResult } from '../lib/types';
-interface Props { ranking: PartyResult[]; compact?: boolean; }
-const { ranking, compact = false } = Astro.props;
+interface Props { ranking: PartyResult[]; experimentId: string; compact?: boolean; }
+const { ranking, experimentId, compact = false } = Astro.props;
 ---
 <div class:list={['ranking', { 'ranking--compact': compact }]}>
   <ol>
     {ranking.map((result, index) => <li>
       <span class="rank-number" aria-label={`Rang ${index + 1}`}>{index + 1}</span>
-      <a class="rank-party" href={`/parteien/${partySlug(result.party)}/`}>{result.party}<small>{formatInteger(result.selected)} / {formatInteger(result.decisions)}</small></a>
+      <a class="rank-party" href={`/experimente/${experimentId}/parteien/${partySlug(result.party)}/`}>{result.party}<small>{formatInteger(result.selected)} / {formatInteger(result.decisions)}</small></a>
       <span class="rank-track" aria-hidden="true"><i style={`width:${result.share * 100}%`}></i></span>
       <strong>{formatPercent(result.share)}</strong>
     </li>)}

@@ -2,12 +2,12 @@
 import { formatInteger, formatPercent } from '../lib/format';
 import { partySlug } from '../lib/parties';
 import type { PartyResult } from '../lib/types';
-const { ranking } = Astro.props as { ranking: PartyResult[] };
+const { ranking, experimentId } = Astro.props as { ranking: PartyResult[]; experimentId: string };
 ---
 <ol class="editorial-ranking">
   {ranking.map((result, index) => <li>
     <span class="position" aria-label={`Rang ${index + 1}`}>{index + 1}</span>
-    <a href={`/parteien/${partySlug(result.party)}/`}>{result.party}</a>
+    <a href={`/experimente/${experimentId}/parteien/${partySlug(result.party)}/`}>{result.party}</a>
     <strong>{formatPercent(result.share)}</strong>
     <span class="bar" aria-hidden="true"><i style={`width:${result.share * 100}%`}></i></span>
     <small>{formatInteger(result.selected)} von {formatInteger(result.decisions)}</small>

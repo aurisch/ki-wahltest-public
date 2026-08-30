@@ -44,6 +44,65 @@ export type PositionBiasResult = {
   secondShare: number;
 };
 
+export type PositionEffectResult = {
+  globalFirstPositionLogOdds: number;
+  pFirstIfEqual: number;
+};
+
+export type PricingSnapshot = {
+  provider: string;
+  model: string;
+  inputPerMillionUsd: number;
+  cachedInputPerMillionUsd: number;
+  outputPerMillionUsd: number;
+  effectiveFrom: string;
+  source: string;
+};
+
+export type UsageStats = {
+  requests: {
+    successful: number;
+    totalAttempts: number;
+    failed: number;
+    retries: number;
+    successRate: number;
+  };
+  timing: {
+    firstRequestUtc: string;
+    lastSuccessfulRequestUtc: string;
+    documentedSpanMs: number;
+    documentedSpanMinutes: number;
+    successfulDecisionsPerMinute: number | null;
+    durationMsStats: { median: number; mean: number; p95: number; min: number; max: number } | null;
+  };
+  tokens: {
+    inputTotal: number;
+    cachedInputTotal: number;
+    uncachedInputTotal: number;
+    outputTotal: number;
+    reasoningTotal: number;
+    totalTokens: number;
+    averagePerSuccessfulDecision: { input: number; cachedInput: number; output: number; total: number };
+    failedAttemptsTokenTotal: number;
+  };
+  caching: {
+    requestsWithCacheHit: number;
+    cacheHitShare: number;
+    cachedTokensTotal: number;
+    cachedInputShare: number;
+    averageCachedTokensPerHitRequest: number;
+  };
+  cost: {
+    pricingSnapshot: PricingSnapshot;
+    totalUsd: number;
+    providerReportedUsd: number | null;
+    tokenBasedUsd: number;
+    perThousandDecisionsUsd: number;
+    perDecisionUsd: number;
+    hypotheticalWithoutCachingUsd: number | null;
+  };
+};
+
 export type PromptVariant = {
   pairId: number;
   order: 'AB' | 'BA';
@@ -57,7 +116,7 @@ export type Experiment = {
   id: string;
   title: string;
   description: string;
-  status: 'completed';
+  status: 'completed' | 'running';
   model: { name: string; exactModelId: string };
   timeline: {
     createdAtUtc: string;
@@ -83,10 +142,12 @@ export type Experiment = {
     conversation: null;
   };
   parties: PartyName[];
+  usage: UsageStats;
   results: {
     ranking: PartyResult[];
     pairs: PairResult[];
     positionBias: PositionBiasResult;
+    positionEffect: PositionEffectResult;
     deterministicBlocks: { perfect: number; total: number };
     deterministicDuels: { perfect: number; total: number };
   };
@@ -94,6 +155,7 @@ export type Experiment = {
     sourceFiles: string[];
     sha256: Record<string, string>;
     publicBasePath: string;
+    derivedBasePath: string;
   };
   notes: string[];
 };

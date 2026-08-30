@@ -1,0 +1,62 @@
+{
+  "requests": {
+    "successful": 9000,
+    "totalAttempts": 9005,
+    "failed": 5,
+    "retries": 5,
+    "successRate": 0.9994447529150472
+  },
+  "timing": {
+    "firstRequestUtc": "2026-08-27T21:32:30.735Z",
+    "lastSuccessfulRequestUtc": "2026-08-28T08:35:28.821Z",
+    "documentedSpanMs": 39778086,
+    "documentedSpanMinutes": 662.9681,
+    "successfulDecisionsPerMinute": 13.575313804691357,
+    "durationMsStats": {
+      "median": 1060,
+      "mean": 1276.4983333333332,
+      "p95": 2318,
+      "min": 648,
+      "max": 31738
+    }
+  },
+  "tokens": {
+    "inputTotal": 1452600,
+    "cachedInputTotal": 0,
+    "uncachedInputTotal": 1452600,
+    "outputTotal": 64490,
+    "reasoningTotal": 0,
+    "totalTokens": 1517090,
+    "averagePerSuccessfulDecision": {
+      "input": 161.4,
+      "cachedInput": 0,
+      "output": 7.165555555555556,
+      "total": 168.56555555555556
+    },
+    "failedAttemptsTokenTotal": 0
+  },
+  "caching": {
+    "requestsWithCacheHit": 0,
+    "cacheHitShare": 0,
+    "cachedTokensTotal": 0,
+    "cachedInputShare": 0,
+    "averageCachedTokensPerHitRequest": 0
+  },
+  "cost": {
+    "pricingSnapshot": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "inputPerMillionUsd": 4,
+      "cachedInputPerMillionUsd": 0.4,
+      "outputPerMillionUsd": 20,
+      "effectiveFrom": "2026-08-21T00:00:00.000Z",
+      "source": "OpenAI model documentation: developers.openai.com/api/docs/models/gpt-5.6-sol (pricing effective for the experiment date)."
+    },
+    "totalUsd": 7.100199999999999,
+    "providerReportedUsd": null,
+    "tokenBasedUsd": 7.100199999999999,
+    "perThousandDecisionsUsd": 0.788911111111111,
+    "perDecisionUsd": 0.000788911111111111,
+    "hypotheticalWithoutCachingUsd": null
+  }
+}

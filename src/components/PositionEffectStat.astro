@@ -1,0 +1,23 @@
+---
+import { formatPercent } from '../lib/format';
+import type { Experiment } from '../lib/types';
+
+const { experiment } = Astro.props as { experiment: Experiment };
+const { pFirstIfEqual } = experiment.results.positionEffect;
+const favorsFirst = pFirstIfEqual >= 0.5;
+const favoredProbability = favorsFirst ? pFirstIfEqual : 1 - pFirstIfEqual;
+const favoredPosition = favorsFirst ? 'zuerst genannte' : 'zweitgenannte';
+---
+
+<div class="position-stat">
+  <p class="stat-number">{formatPercent(favoredProbability, 1)}</p>
+  <p class="stat-explain">
+    Wären zwei Parteien für {experiment.model.name} unter den dokumentierten Bedingungen gleich stark, würde die {favoredPosition} Partei laut dem statistischen Bradley-Terry-Modell mit dieser geschätzten Wahrscheinlichkeit ausgewählt.
+  </p>
+</div>
+
+<style>
+  .position-stat { padding: 1.4rem 0 0; border-top: 2px solid var(--ink); }
+  .stat-number { margin-top: .5rem; font-size: clamp(2.6rem, 6vw, 4rem); font-weight: 750; line-height: 1; letter-spacing: -.04em; }
+  .stat-explain { max-width: 32rem; margin-top: .9rem; color: var(--muted); font-size: .92rem; line-height: 1.5; }
+</style>

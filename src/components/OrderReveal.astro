@@ -15,15 +15,15 @@ const selectionLabel = shortPartyName(trackedParty) === 'Grüne' ? 'Auswahl der 
 ---
 <div class="reveal">
   <article class="reveal-step">
-    <p class="step-label">Erster Durchlauf · 100 Entscheidungen</p>
+    <p class="step-label">Reihenfolge A · 100 Entscheidungen</p>
     <h3>{shortPartyName(firstOrder.first)} oder {shortPartyName(firstOrder.second)}?</h3>
     <p class="party-order"><strong>{firstOrder.first}</strong><span>gegen</span><strong>{firstOrder.second}</strong></p>
     <p class="reveal-score" aria-label={`${firstOrder.firstSelected} zu ${firstOrder.secondSelected}`}><strong>{firstOrder.firstSelected}</strong><i>:</i><strong>{firstOrder.secondSelected}</strong></p>
     <p>{modelName}: {sentence(firstOrder)}</p>
   </article>
-  <div class="turn"><span>Und wenn wir die Reihenfolge umdrehen?</span></div>
+  <div class="turn"><span>Und mit vertauschter Reihenfolge?</span></div>
   <article class="reveal-step">
-    <p class="step-label">Zweiter Durchlauf · 100 Entscheidungen</p>
+    <p class="step-label">Reihenfolge B · 100 Entscheidungen</p>
     <h3>{shortPartyName(secondOrder.first)} oder {shortPartyName(secondOrder.second)}?</h3>
     <p class="party-order"><strong>{secondOrder.first}</strong><span>gegen</span><strong>{secondOrder.second}</strong></p>
     <p class="reveal-score" aria-label={`${secondOrder.firstSelected} zu ${secondOrder.secondSelected}`}><strong>{secondOrder.firstSelected}</strong><i>:</i><strong>{secondOrder.secondSelected}</strong></p>
@@ -37,6 +37,6 @@ const selectionLabel = shortPartyName(trackedParty) === 'Grüne' ? 'Auswahl der 
   </div>
 </div>
 <style>
-  .reveal{margin-top:3rem}.reveal-step{padding-block:clamp(3rem,8vw,7rem);border-top:1px solid var(--line)}.step-label{color:var(--teal);font-size:.78rem;font-weight:750;letter-spacing:.08em;text-transform:uppercase}.reveal-step h3{margin-top:1rem;font-size:clamp(2rem,5vw,4.5rem)}.party-order{display:flex;align-items:center;gap:1rem;margin-top:2rem;font-size:clamp(1rem,2vw,1.35rem)}.party-order span{color:var(--muted)}.reveal-score{display:flex;gap:clamp(.7rem,2vw,1.5rem);margin-block:2.5rem;font-size:clamp(6rem,20vw,14rem);font-weight:750;line-height:.65;letter-spacing:-.09em}.reveal-score i{color:var(--line-strong);font-style:normal}.reveal-step>p:last-child{max-width:42rem;color:var(--muted);font-size:1.08rem}.turn{padding:2rem 0;border-block:1px solid var(--line);font-size:clamp(1.4rem,3vw,2.2rem);font-weight:700}.only-order{display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding-block:clamp(3rem,7vw,6rem);font-size:clamp(1.2rem,2.5vw,1.8rem)}.only-order strong{align-self:end}.effect-number{padding-block:clamp(3rem,8vw,7rem);color:var(--paper);background:var(--ink);box-shadow:0 0 0 100vmax var(--ink);clip-path:inset(0 -100vmax)}.effect-number>strong,.effect-number>span{display:block}.effect-number>strong{font-size:clamp(7rem,25vw,16rem);line-height:.75;letter-spacing:-.09em}.effect-number>span{margin-top:1rem;font-size:clamp(1.8rem,4vw,3.5rem);font-weight:700}.effect-number>p{max-width:42rem;margin-top:2rem;color:#c9d1ce;font-size:1.1rem}.effect-shift{padding-bottom:2rem;border-bottom:1px solid #41504d}.effect-shift span{font-size:1rem;font-weight:700}.effect-shift b{display:block;margin-top:.45rem;color:var(--paper);font-size:clamp(2rem,5vw,4rem);line-height:1.05}
+  .reveal{margin-top:3rem}.reveal-step{padding-block:clamp(3rem,8vw,7rem);border-top:1px solid var(--line)}.step-label{color:var(--teal);font-size:.78rem;font-weight:750;letter-spacing:.08em;text-transform:uppercase}.reveal-step h3{margin-top:1rem;font-size:clamp(2rem,5vw,4.5rem)}.party-order{display:flex;align-items:center;gap:1rem;margin-top:2rem;font-size:clamp(1rem,2vw,1.35rem)}.party-order span{color:var(--muted)}.reveal-score{display:flex;gap:clamp(.7rem,2vw,1.5rem);margin-block:2.5rem;font-size:clamp(6rem,20vw,14rem);font-weight:750;line-height:.65;letter-spacing:-.09em}.reveal-score i{color:var(--line-strong);font-style:normal}.reveal-step>p:last-child{max-width:42rem;color:var(--muted);font-size:1.08rem}.turn{padding:2rem 0;border-block:1px solid var(--line);font-size:clamp(1.4rem,3vw,2.2rem);font-weight:700}.only-order{display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding-block:clamp(3rem,7vw,6rem);font-size:clamp(1.2rem,2.5vw,1.8rem)}.only-order strong{align-self:end}.effect-number{padding-block:clamp(3rem,8vw,7rem);color:var(--paper);background:var(--ink);box-shadow:0 0 0 100vmax var(--ink);clip-path:inset(0 -100vmax)}.effect-number>strong,.effect-number>span{display:block}.effect-number>strong{font-size:clamp(7rem,25vw,16rem);line-height:.75;letter-spacing:-.09em}.effect-number>span{margin-top:1rem;font-size:clamp(1.8rem,4vw,3.5rem);font-weight:700}.effect-number>p{max-width:42rem;margin-top:2rem;color:#d6c9bd;font-size:1.1rem}.effect-shift{padding-bottom:2rem;border-bottom:1px solid #4d3c30}.effect-shift span{font-size:1rem;font-weight:700}.effect-shift b{display:block;margin-top:.45rem;color:var(--paper);font-size:clamp(2rem,5vw,4rem);line-height:1.05}
   @media(max-width:620px){.party-order{align-items:flex-start;flex-direction:column;gap:.25rem}.reveal-score{font-size:clamp(5rem,29vw,8rem)}.only-order{grid-template-columns:1fr}.effect-number strong{font-size:clamp(6rem,35vw,10rem)}}
 </style>

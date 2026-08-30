@@ -1,4 +1,5 @@
 ---
+import { shortPartyName } from '../lib/parties';
 import type { PromptVariant } from '../lib/types';
 
 const { variant, experimentId, runsPerOrder } = Astro.props as {
@@ -30,7 +31,7 @@ const afterSecondParty = partyLine.slice(secondPartyStart + variant.secondParty.
 <aside class="prompt-example" aria-labelledby="prompt-example-title">
   <div class="prompt-introduction">
     <p class="prompt-label">So haben wir gefragt</p>
-    <h3 id="prompt-example-title">Beispiel: Grüne gegen ÖDP</h3>
+    <h3 id="prompt-example-title">Beispiel: {shortPartyName(variant.firstParty)} gegen {shortPartyName(variant.secondParty)}</h3>
     <p>Die Versuchsanweisung blieb gleich. Je nach Duell wurden die beiden Parteinamen eingesetzt und ihre Reihenfolge vertauscht.</p>
   </div>
 

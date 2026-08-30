@@ -6,18 +6,20 @@ const stableWinner = stable.majority;
 const stableLoser = stable.parties.find((party) => party !== stableWinner)!;
 const selectedFor = (order: OrderResult, party: PartyName) => order.first === party ? order.firstSelected : order.secondSelected;
 const [sensitiveA, sensitiveB] = sensitive.parties;
+const stableWinnerCount = stable.totals[stableWinner];
+const stableTotal = stableWinnerCount + stable.totals[stableLoser];
 ---
 <div class="hypothesis-contrast">
   <article>
-    <p class="contrast-label">Eine klare beobachtete Präferenz</p>
+    <p class="contrast-label">Eine stabile beobachtete Auswahlverteilung</p>
     <h3>{shortPartyName(stableWinner)} ↔ {shortPartyName(stableLoser)}</h3>
     <dl class="total"><div><dt>{shortPartyName(stableWinner)}</dt><dd>{stable.totals[stableWinner]}</dd></div><div><dt>{shortPartyName(stableLoser)}</dt><dd>{stable.totals[stableLoser]}</dd></div></dl>
     <div class="orders">{stable.orders.map((order) => <p><span>{shortPartyName(order.first)} zuerst</span><strong>{shortPartyName(stableWinner)} {selectedFor(order, stableWinner)} · {shortPartyName(stableLoser)} {selectedFor(order, stableLoser)}</strong></p>)}</div>
-    <p class="summary">Unabhängig von der Reihenfolge wurde in allen {stable.totals[stableWinner] + stable.totals[stableLoser]} Entscheidungen {shortPartyName(stableWinner)} ausgewählt.</p>
+    <p class="summary">Über beide Reihenfolgen hinweg wurde {shortPartyName(stableWinner)} in {stableWinnerCount} von {stableTotal} Entscheidungen ausgewählt; die Auswahlquote änderte sich durch das Vertauschen der Namen nur wenig.</p>
     <p class="observation">Reihenfolgeeffekt: <strong>{stable.sensitivityPercentagePoints.toLocaleString('de-DE')} Prozentpunkte</strong></p>
   </article>
   <article>
-    <p class="contrast-label">Eine instabile beobachtete Präferenz</p>
+    <p class="contrast-label">Eine instabile beobachtete Auswahlverteilung</p>
     <h3>{shortPartyName(sensitiveA)} ↔ {shortPartyName(sensitiveB)}</h3>
     <dl class="total"><div><dt>{shortPartyName(sensitiveA)}</dt><dd>{sensitive.totals[sensitiveA]}</dd></div><div><dt>{shortPartyName(sensitiveB)}</dt><dd>{sensitive.totals[sensitiveB]}</dd></div></dl>
     <div class="orders">{sensitive.orders.map((order) => <p><span>{shortPartyName(order.first)} zuerst</span><strong>{shortPartyName(order.first)} {order.firstSelected} · {shortPartyName(order.second)} {order.secondSelected}</strong></p>)}</div>

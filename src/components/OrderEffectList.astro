@@ -1,10 +1,10 @@
 ---
 import { shortPartyName } from '../lib/parties';
 import type { PairResult } from '../lib/types';
-const { pairs } = Astro.props as { pairs: PairResult[] };
+const { pairs, experimentId } = Astro.props as { pairs: PairResult[]; experimentId: string };
 ---
 <div class="effect-cards">
-  {pairs.map((pair) => <a href={`/duelle/${pair.id}/`}>
+  {pairs.map((pair) => <a href={`/experimente/${experimentId}/duelle/${pair.id}/`}>
     <span>{shortPartyName(pair.parties[0])} / {shortPartyName(pair.parties[1])}</span>
     <strong>{pair.sensitivityPercentagePoints.toLocaleString('de-DE')}<small>Prozentpunkte</small></strong>
     <i aria-hidden="true">→</i>

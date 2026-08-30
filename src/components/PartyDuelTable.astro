@@ -2,10 +2,10 @@
 import { shortPartyName } from '../lib/parties';
 import type { PartyDuel } from '../lib/party-results';
 import type { PartyName } from '../lib/types';
-const { party, duels } = Astro.props as { party: PartyName; duels: PartyDuel[] };
+const { party, duels, experimentId } = Astro.props as { party: PartyName; duels: PartyDuel[]; experimentId: string };
 ---
 <div class="duel-list">
-  {duels.map((duel) => <a href={`/duelle/${duel.pair.id}/`}>
+  {duels.map((duel) => <a href={`/experimente/${experimentId}/duelle/${duel.pair.id}/`}>
     <span>gegen <strong>{shortPartyName(duel.opponent)}</strong></span>
     <span class="score" aria-label={`${party} ${duel.selected} zu ${duel.opponentSelected} ${duel.opponent}`}><strong>{duel.selected}</strong><i>:</i>{duel.opponentSelected}</span>
     <span class:list={['outcome', duel.outcome]}>{duel.outcome === 'won' ? 'gewonnen' : duel.outcome === 'lost' ? 'verloren' : 'unentschieden'}</span>

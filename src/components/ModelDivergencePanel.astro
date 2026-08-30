@@ -1,0 +1,44 @@
+---
+import { formatPercent } from '../lib/format';
+import type { Divergence } from '../lib/comparison';
+
+const { divergences } = Astro.props as { divergences: Divergence[] };
+---
+
+<ol class="divergence-list">
+  {divergences.map((divergence) => (
+    <li>
+      <div class="divergence-head">
+        <span class="party-name">{divergence.party}</span>
+        <span class="spread">{divergence.spreadPercentagePoints.toFixed(1).replace('.', ',')} <small>Prozentpunkte Unterschied</small></span>
+      </div>
+      <div class="divergence-rows">
+        {divergence.entries.map((entry) => (
+          <div class="divergence-row" class:list={{ extreme: entry === divergence.highestEntry || entry === divergence.lowestEntry }}>
+            <span class="model-name">{entry.modelName}</span>
+            <span class="bar-track"><i style={`width:${entry.share * 100}%`}></i></span>
+            <span class="share">{formatPercent(entry.share)}</span>
+          </div>
+        ))}
+      </div>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .divergence-list { margin: 2rem 0 0; padding: 0; list-style: none; display: grid; gap: 1.6rem; }
+  .divergence-list li { padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .divergence-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1.5rem; }
+  .party-name { font-size: 1.1rem; font-weight: 750; }
+  .spread { font-variant-numeric: tabular-nums; font-weight: 750; color: var(--teal); }
+  .spread small { display: block; margin-top: .1rem; color: var(--muted); font-weight: 500; font-size: .72rem; text-transform: none; }
+  .divergence-rows { display: grid; gap: .4rem; margin-top: .9rem; }
+  .divergence-row { display: grid; grid-template-columns: minmax(7rem, 11rem) 1fr 3.6rem; align-items: center; gap: .75rem; font-size: .86rem; }
+  .divergence-row.extreme .model-name, .divergence-row.extreme .share { font-weight: 750; color: var(--ink); }
+  .model-name { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { position: relative; overflow: hidden; height: .55rem; border-radius: 99rem; background: var(--surface-soft); }
+  .bar-track i { display: block; height: 100%; border-radius: inherit; background: var(--line-strong); }
+  .divergence-row.extreme .bar-track i { background: var(--teal); }
+  .share { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  @media (max-width: 560px) { .divergence-row { grid-template-columns: 6rem 1fr 3.2rem; } }
+</style>

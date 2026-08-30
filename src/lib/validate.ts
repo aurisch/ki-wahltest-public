@@ -66,5 +66,19 @@ export function validateExperiment(experiment: Experiment): void {
   if (experiment.results.positionBias.firstSelected + experiment.results.positionBias.secondSelected !== 9000) {
     errors.push('Positionsdaten summieren sich nicht auf 9.000.');
   }
+  const impliedPFirst = 1 / (1 + Math.exp(-experiment.results.positionEffect.globalFirstPositionLogOdds));
+  if (Math.abs(impliedPFirst - experiment.results.positionEffect.pFirstIfEqual) > 1e-6) {
+    errors.push('pFirstIfEqual passt nicht zu sigmoid(globalFirstPositionLogOdds).');
+  }
+
+  const { usage } = experiment;
+  if (usage.requests.successRate < 0 || usage.requests.successRate > 1) errors.push('usage.requests.successRate liegt außerhalb [0,1].');
+  if (usage.requests.failed !== usage.requests.totalAttempts - usage.requests.successful) errors.push('usage.requests.failed passt nicht zu totalAttempts - successful.');
+  if (usage.caching.cacheHitShare < 0 || usage.caching.cacheHitShare > 1) errors.push('usage.caching.cacheHitShare liegt außerhalb [0,1].');
+  if (usage.caching.cachedInputShare < 0 || usage.caching.cachedInputShare > 1) errors.push('usage.caching.cachedInputShare liegt außerhalb [0,1].');
+  if (usage.tokens.cachedInputTotal + usage.tokens.uncachedInputTotal !== usage.tokens.inputTotal) errors.push('usage.tokens: cached + uncached ergibt nicht inputTotal.');
+  if (usage.cost.totalUsd < 0 || usage.cost.tokenBasedUsd < 0) errors.push('usage.cost enthält negative Kosten.');
+  if (usage.cost.providerReportedUsd !== null && usage.cost.providerReportedUsd < 0) errors.push('usage.cost.providerReportedUsd ist negativ.');
+
   if (errors.length) throw new Error(`Ungültige Experimentdaten:\n- ${errors.join('\n- ')}`);
 }

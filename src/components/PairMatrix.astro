@@ -1,7 +1,7 @@
 ---
 import { pairSlug, shortPartyName } from '../lib/parties';
 import type { PairResult, PartyName } from '../lib/types';
-const { parties, pairs } = Astro.props as { parties: PartyName[]; pairs: PairResult[] };
+const { parties, pairs, experimentId } = Astro.props as { parties: PartyName[]; pairs: PairResult[]; experimentId: string };
 const getPair = (a: PartyName, b: PartyName) => pairs.find((pair) => pair.parties.includes(a) && pair.parties.includes(b));
 ---
 <div class="matrix-wrap" tabindex="0" role="region" aria-label="Duellmatrix, horizontal scrollbar auf kleinen Bildschirmen">
@@ -12,10 +12,10 @@ const getPair = (a: PartyName, b: PartyName) => pairs.find((pair) => pair.partie
       const pair = getPair(row, column)!;
       const own = pair.totals[row] ?? 0;
       const other = pair.totals[column] ?? 0;
-      return <td class:list={{ winner: own > other }}><a href={`/duelle/${pairSlug(row, column)}/`} aria-label={`${row} gegen ${column}: ${own} zu ${other}`}>{own}<small>:{other}</small></a></td>;
+      return <td class:list={{ winner: own > other }}><a href={`/experimente/${experimentId}/duelle/${pairSlug(row, column)}/`} aria-label={`${row} gegen ${column}: ${own} zu ${other}`}>{own}<small>:{other}</small></a></td>;
     })}</tr>)}</tbody>
   </table>
 </div>
 <style>
-  .matrix-wrap{position:relative;overflow-x:auto;margin-top:2rem;border:1px solid var(--line);border-radius:var(--radius-lg);padding-bottom:.5rem;box-shadow:var(--shadow-sm)}.matrix-wrap::after{content:'';position:absolute;top:0;right:0;bottom:.5rem;width:2.5rem;background:linear-gradient(to right,transparent,var(--surface));pointer-events:none}.matrix{width:100%;min-width:58rem;border-collapse:collapse;font-size:.8rem;text-align:center}.matrix caption{margin:1rem 1rem 1rem;color:var(--muted);text-align:left}.matrix th,.matrix td{width:5rem;height:3.8rem;padding:.3rem;border:1px solid var(--line)}.matrix thead th{height:7rem;vertical-align:bottom}.matrix thead span{display:inline-block;max-width:5rem;line-height:1.2;word-break:break-word}.matrix tbody th{width:9rem;text-align:left;white-space:nowrap}.matrix td{background:var(--surface)}.matrix td.winner{background:#e2eeeb}.matrix td.empty{color:var(--line-strong);background:transparent}.matrix a{display:grid;place-items:center;width:100%;height:100%;color:var(--ink);font-size:1rem;font-weight:750;text-decoration:none;transition:background-color .15s var(--ease),color .15s var(--ease)}.matrix a:hover{background:var(--teal);color:#fff}.matrix small{font-size:.68rem;font-weight:500}
+  .matrix-wrap{position:relative;overflow-x:auto;margin-top:2rem;border:1px solid var(--line);border-radius:var(--radius-lg);padding-bottom:.5rem;box-shadow:var(--shadow-sm)}.matrix-wrap::after{content:'';position:absolute;top:0;right:0;bottom:.5rem;width:2.5rem;background:linear-gradient(to right,transparent,var(--surface));pointer-events:none}.matrix{width:100%;min-width:58rem;border-collapse:collapse;font-size:.8rem;text-align:center}.matrix caption{margin:1rem 1rem 1rem;color:var(--muted);text-align:left}.matrix th,.matrix td{width:5rem;height:3.8rem;padding:.3rem;border:1px solid var(--line)}.matrix thead th{height:7rem;vertical-align:bottom}.matrix thead span{display:inline-block;max-width:5rem;line-height:1.2;word-break:break-word}.matrix tbody th{width:9rem;text-align:left;white-space:nowrap}.matrix td{background:var(--surface)}.matrix td.winner{background:#f2e4d8}.matrix td.empty{color:var(--line-strong);background:transparent}.matrix a{display:grid;place-items:center;width:100%;height:100%;color:var(--ink);font-size:1rem;font-weight:750;text-decoration:none;transition:background-color .15s var(--ease),color .15s var(--ease)}.matrix a:hover{background:var(--teal);color:#fff}.matrix small{font-size:.68rem;font-weight:500}
 </style>

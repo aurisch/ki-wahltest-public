@@ -1,6 +1,0 @@
----
-import PairMatrix from '../../components/PairMatrix.astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { experiment } from '../../data/experiments/gpt56-main-v2';
----
-<BaseLayout title="Duellmatrix" description="Alle 45 Paarvergleiche des GPT-5.6-Sol-Hauptlaufs in einer Matrix."><section class="page"><div class="container"><p class="eyebrow">45 Paarungen</p><h1>Duellmatrix</h1><p class="lede">Jede Zelle zeigt aus Sicht der Zeilenpartei, wie die 200 Entscheidungen des vollständigen Duells verteilt waren. Ein Klick öffnet beide Reihenfolgen.</p><PairMatrix parties={experiment.parties} pairs={experiment.results.pairs} /></div></section></BaseLayout>

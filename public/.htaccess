@@ -8,3 +8,15 @@ RewriteRule ^ https://ki-wahltest.de%{REQUEST_URI} [L,R=301]
 # HSTS, vorsichtig kurz (5 Minuten) ohne includeSubDomains/preload,
 # damit ein Fehler den Zugriff nicht monatelang blockieren kann.
 Header always set Strict-Transport-Security "max-age=300"
+
+# Alte, vor der Mehrmodell-Umstellung indexierte Flach-URLs auf die
+# entsprechenden GPT-5.6-Routen unter /experimente/ umleiten. /ergebnisse/
+# und /daten/ brauchen keinen Redirect mehr: sie tragen jetzt eigene,
+# modellübergreifende Inhalte statt auf GPT-5.6 zu verweisen.
+RewriteRule ^duelle/?$ /experimente/gpt-5.6-sol-main-v2/duelle/ [R=301,L]
+RewriteRule ^duelle/(.+)$ /experimente/gpt-5.6-sol-main-v2/duelle/$1 [R=301,L]
+RewriteRule ^parteien/?$ /experimente/gpt-5.6-sol-main-v2/parteien/ [R=301,L]
+RewriteRule ^parteien/(.+)$ /experimente/gpt-5.6-sol-main-v2/parteien/$1 [R=301,L]
+
+# Kurzlebige Zwischenroute aus der Entwicklung auf den endgültigen Namen umleiten.
+RewriteRule ^vergleich/?$ /ergebnisse/ [R=301,L]

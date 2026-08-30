@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import { formatInteger, formatPercent } from '../../../../lib/format';
+import { experiments } from '../../../../lib/experiments';
+import { partySlug } from '../../../../lib/parties';
+import { getPartySummaries } from '../../../../lib/party-results';
+export function getStaticPaths() { return experiments.map((experiment) => ({ params: { id: experiment.id }, props: { experiment } })); }
+const { experiment } = Astro.props;
+const summaries = [...getPartySummaries(experiment)].sort((a, b) => b.result.share - a.result.share);
+const opponentsPerParty = experiment.parties.length - 1;
+const decisionsPerParty = summaries[0]!.result.decisions;
+---
+<BaseLayout title={`Parteien – ${experiment.model.name}`} description={`Alle ${experiment.parties.length} Parteien mit Auswahlquote und direkter Duellbilanz im ${experiment.title}.`}>
+  <section class="page"><div class="container"><p class="eyebrow">Alle {experiment.parties.length} Parteien · {experiment.model.name}</p><h1>Parteien im {experiment.title}</h1><p class="lede">Jede Partei trat gegen jede der anderen {opponentsPerParty} Parteien an – insgesamt {formatInteger(decisionsPerParty)} Einzelentscheidungen pro Partei.</p>
+    <div class="party-grid">{summaries.map((summary) => <a href={`/experimente/${experiment.id}/parteien/${partySlug(summary.party)}/`}>
+      <span class="party-name">{summary.party}</span>
+      <strong>{formatPercent(summary.result.share)}</strong>
+      <span>{formatInteger(summary.result.selected)} / {formatInteger(summary.result.decisions)} Entscheidungen</span>
+      <span>{summary.won} von {opponentsPerParty} direkten Duellen gewonnen{summary.drawn ? ` · ${summary.drawn} unentschieden` : ''}</span>
+      <i aria-hidden="true">→</i>
+    </a>)}</div>
+    <div class="notice interpretation"><strong>Keine Umfragewerte</strong>Die Auswahlquote beschreibt nur die Entscheidungen unter den dokumentierten Bedingungen dieses Experiments. Sie ist weder Wahlprognose noch Wahlempfehlung.</div>
+  </div></section>
+</BaseLayout>
+<style>
+  .party-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:3rem}.party-grid a{position:relative;display:grid;gap:.35rem;padding:1.4rem 3rem 1.4rem 1.4rem;border:1px solid var(--line);color:var(--ink);background:var(--surface);text-decoration:none}.party-grid a:hover{border-color:var(--teal);background:#f6ece2}.party-name{font-size:1.2rem;font-weight:750}.party-grid strong{font-size:clamp(2.3rem,5vw,4rem);line-height:1;letter-spacing:-.05em}.party-grid span:not(.party-name){color:var(--muted);font-size:.84rem}.party-grid i{position:absolute;right:1.2rem;top:1.2rem;font-style:normal}.interpretation{max-width:48rem;margin-top:2rem}
+  @media(max-width:650px){.party-grid{grid-template-columns:1fr}}
+</style>

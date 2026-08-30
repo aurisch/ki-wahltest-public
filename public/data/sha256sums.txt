@@ -1,6 +1,14 @@
-3dc638ad90e8b04a03ab449630547ee2da6ad88d68d026fff14ea1668376161c  website-data.json
-240797bbff81252b576a7449cbc15eddbdd0247e3afa99cc8d32f4b62d4afe33  pairwise-analysis.csv
-5853b582f02a7df1916b3c70dfc92509edff136d153db238f0f31c75680caf47  analysis-report.md
 4b3530aa7a389d5276669fa1bbd639d84b7510812b8452336e5f00aaf5c05690  experiments/gpt-5.6-sol-main-v2/manifest.json
 bdf5b4040951b6d7e913c62bb7f01666d9592e66b55fee6cbbd453065e59ddc2  experiments/gpt-5.6-sol-main-v2/jobs.jsonl
 221009b933f6d913ffc0ae17d4c67c8b931c3f292e064a0b50a406a7addb6650  experiments/gpt-5.6-sol-main-v2/results.jsonl
+3dc638ad90e8b04a03ab449630547ee2da6ad88d68d026fff14ea1668376161c  experiments/gpt-5.6-sol-main-v2/website-data.json
+240797bbff81252b576a7449cbc15eddbdd0247e3afa99cc8d32f4b62d4afe33  experiments/gpt-5.6-sol-main-v2/pairwise-analysis.csv
+5853b582f02a7df1916b3c70dfc92509edff136d153db238f0f31c75680caf47  experiments/gpt-5.6-sol-main-v2/analysis-report.md
+aed4697f70000a36c3739f07155cdd891b33ff861f4cef3952c96f9bb59a336f  experiments/gpt-5.6-sol-main-v2/usage.json
+fdd1a90e14ee06e7ccc0dd5018fab5819774480f8671f08d8951cb2602a61093  experiments/grok-4.3-main-v1/manifest.json
+afa700901a59350e56736f1c2a2f694321ea0475420a1e1e73f76e90330960f0  experiments/grok-4.3-main-v1/jobs.jsonl
+6f9e021bed0151fd13f9299a84226332e5bfeb4d678b40b8e9e392bcdee643d2  experiments/grok-4.3-main-v1/results.jsonl
+569073adf1cdde142fa4ba9196532d74618ee8b1254f414e4bfead04f491a069  experiments/grok-4.3-main-v1/website-data.json
+5788bce8c852140f317c27a4cd674c4ca201727f24b938f3abfc1fb8a0e26e37  experiments/grok-4.3-main-v1/pairwise-analysis.csv
+be03c08a398149a220c75fb50d96500a66d8913ec17a54d8b4df8eba802a936f  experiments/grok-4.3-main-v1/analysis-report.md
+6c54d6a7fc9b4582f3b763a9d0b588fe8f07630a3b21985087e5a6789268d9cc  experiments/grok-4.3-main-v1/usage.json

@@ -1,6 +1,6 @@
 # ki-wahltest.de
 
-`ki-wahltest.de` dokumentiert vollständig beschriebene Experimente dazu, wie Large Language Models bei paarweisen Entscheidungen zwischen vorab festgelegten Parteibezeichnungen reagieren. Untersucht werden insbesondere Reihenfolgeeffekte, Promptvarianten, Modellunterschiede und die Stabilität wiederholter Entscheidungen.
+`ki-wahltest.de` dokumentiert reproduzierbare Experimente dazu, wie KI-Sprachmodelle bei paarweisen Entscheidungen zwischen vorab festgelegten deutschen Parteibezeichnungen reagieren. Untersucht werden insbesondere Auswahlquoten, Reihenfolgeeffekte, Modellunterschiede und die Stabilität wiederholter Entscheidungen.
 
 Die Website ist **keine Wahlentscheidungshilfe**. Auswahlquoten sind weder Wahlumfragen noch prognostizierte Stimmenanteile oder politische Zustimmung.
 
@@ -10,8 +10,8 @@ Die Website ist **keine Wahlentscheidungshilfe**. Auswahlquoten sind weder Wahlu
 - TypeScript im Strict-Modus
 - normales CSS, Systemfonts
 - keine eigene Datenbank oder Laufzeit-API
-- keine Cookies; anonyme Reichweitenmessung über Plausible (cookielos)
-- Rechtstexte werden über die Einbindung der IT-Recht Kanzlei bereitgestellt
+- keine Cookies; anonyme Reichweitenmessung über Plausible
+- Rechtstexte über die Einbindung der IT-Recht Kanzlei
 - Vitest für Daten- und Hilfsfunktionstests
 
 Node.js 24 ist in `.nvmrc` dokumentiert.
@@ -24,13 +24,13 @@ npm install
 npm run dev
 ```
 
-Astro nennt beim Start die lokale URL. Wichtige Prüfungen:
+Wichtige Prüfungen:
 
 ```bash
 npm run audit:data   # rekonstruiert zentrale Ergebnisse aus den Primärdaten
 npm run check        # Astro-/TypeScript-Prüfung
 npm test             # Unit-Tests
-npm run build        # vollständig statischer Build nach dist/
+npm run build        # statischer Build nach dist/
 npm run audit:site   # prüft die erzeugte Website
 npm run check:launch # Build, Site-Audit und Go-live-Prüfung
 npm run preview      # lokalen Production-Build ansehen
@@ -41,57 +41,68 @@ npm run preview      # lokalen Production-Build ansehen
 ```text
 src/
   components/       wiederverwendbare Daten- und Layoutdarstellungen
-  data/experiments/ typisierte Experimentdefinitionen
+  data/experiments/ typisierte Definitionen der einzelnen Modellläufe
   layouts/          gemeinsamer HTML-Rahmen und SEO-Metadaten
-  lib/              Typen, Slugs, Formate und Validierung
+  lib/              Typen, Vergleichslogik, Slugs, Formate und Validierung
   pages/            statisch erzeugte Seiten und dynamische Duell-/Parteirouten
   styles/           globales CSS
 public/
-  data/              veröffentlichte Daten, Manifest und Prüfsummen
+  data/experiments/ Primär- und abgeleitete Daten je Experiment
+  data/sha256sums.txt
   robots.txt
 ```
 
-Die Website importiert die abgeleiteten Daten aus `public/data/website-data.json`. Die unveränderten Primärdaten des Hauptlaufs liegen versioniert unter `public/data/experiments/gpt-5.6-sol-main-v2/`.
+Jeder abgeschlossene Modelllauf besitzt einen eigenen Ordner unter `public/data/experiments/<experiment-id>/`. Die Website importiert die jeweiligen abgeleiteten `website-data.json`- und `usage.json`-Dateien über `src/data/experiments/*.ts` und baut daraus die modellbezogenen Seiten sowie die modellübergreifenden Vergleiche.
 
 ## Datenmodell
 
-Das zentrale TypeScript-Modell steht in `src/lib/types.ts`. Ein `Experiment` enthält unter anderem Modell-ID, Promptrevision, Parameter, Seed, die verwendeten Parteibezeichnungen, Ranking, Paarergebnisse und Provenienzangaben.
+Das zentrale TypeScript-Modell steht in `src/lib/types.ts`. Ein `Experiment` enthält unter anderem Modell-ID, Promptrevision, Parameter, Seed, verwendete Parteibezeichnungen, Ranking, Paarergebnisse, Positionseffekt, Betriebskennzahlen und Provenienzangaben.
 
-`src/data/experiments/gpt56-main-v2.ts` importiert die veröffentlichten Daten und bildet daraus das typisierte Hauptexperiment. Ergebniszahlen werden nicht in den Darstellungskomponenten hartcodiert.
+Aktuell veröffentlichte Hauptläufe:
+
+- `gpt-5.6-sol-main-v2`
+- `grok-4.3-main-v1`
+
+Ergebniszahlen werden nicht in den Darstellungskomponenten manuell gepflegt, sondern aus den versionierten Experimentdaten übernommen.
 
 ## Datenintegrität
 
-`npm run audit:data` liest die Primärdaten neu ein und prüft unter anderem:
+`npm run audit:data` liest die Primärdaten jedes abgeschlossenen Experiments neu ein und prüft unter anderem:
 
-- 9.000 erfolgreiche eindeutige Sequenzen
-- vollständige Sequenznummern 1 bis 9000
+- 9.000 erfolgreiche eindeutige Sequenzen je Hauptlauf
+- vollständige Sequenznummern
 - 45 Paarungen und zwei Reihenfolgen je Paar
 - 100 erfolgreiche Entscheidungen je Reihenfolge
 - 1.800 Beteiligungen je verwendeter Parteibezeichnung
 - Parteisummen und Rangliste
-- Permutationssensitivität aller 45 Duelle
+- Reihenfolgeeffekte aller 45 Duelle
 - Positionsstatistik und Konstanzwerte
-- SHA-256-Prüfsummen der Primärdateien
+- Token- und Kostenkennzahlen
+- SHA-256-Prüfsummen der veröffentlichten Dateien
 
 Der Daten-Audit ist Bestandteil der CI und läuft zusätzlich vor jedem statischen Build.
 
 ## Verwendete Parteibezeichnungen
 
-Im Hauptlauf wurden zehn vorab festgelegte Parteibezeichnungen untersucht. Die Auswahl erhebt keinen Anspruch auf Vollständigkeit. CDU und CSU wurden für dieses Experiment unter der gemeinsamen Bezeichnung `CDU/CSU` zusammengefasst.
+Untersucht werden zehn vorab festgelegte Parteibezeichnungen. Die Auswahl erhebt keinen Anspruch auf Vollständigkeit. CDU und CSU werden für diese Experimente unter der gemeinsamen Bezeichnung `CDU/CSU` zusammengefasst.
 
-## Primärdaten des Hauptlaufs
+## Primär- und Analysedaten
 
-Die unveränderten Originaldateien liegen unter `public/data/experiments/gpt-5.6-sol-main-v2/`:
+Jedes Experiment veröffentlicht mindestens:
 
-- `manifest.json`: Versuchskonfiguration, 90 Prompttexte und deren SHA-256-Hashes
-- `jobs.jsonl`: eingefrorene Reihenfolge aller 9.000 Jobs
-- `results.jsonl`: protokollierte Versuche einschließlich erfolgreicher Entscheidungen und Retry-/Fehlerzeilen
+- `manifest.json`: Versuchskonfiguration, Prompttexte und SHA-256-Hashes
+- `jobs.jsonl`: eingefrorene Reihenfolge aller Jobs
+- `results.jsonl`: protokollierte API-Versuche einschließlich Antworten, Fehlern, Retries und Usage-Daten
+- `website-data.json`: abgeleitete Ergebnisdaten für die Website
+- `pairwise-analysis.csv`: abgeleitete Duellanalyse
+- `analysis-report.md`: statistische Basisanalyse
+- `usage.json`: Betriebs-, Token-, Cache- und Kostenkennzahlen
 
-Die Primärdaten werden nicht nachträglich verändert. Abgeleitete Dateien dürfen neu erzeugt werden, müssen aber mit den Primärdaten konsistent bleiben.
+Die Primärdaten werden nicht nachträglich verändert. Abgeleitete Dateien müssen mit den Primärdaten konsistent bleiben und werden durch Prüfsummen abgesichert.
 
 ## Modellvergleiche
 
-Ein sauberer Vergleich zweier Modellgenerationen setzt möglichst identische Versuchsbedingungen voraus. Frühere GPT-5.4-Läufe mit anderer Promptfassung werden deshalb nicht als isolierter Modelleffekt des GPT-5.6-Hauptlaufs interpretiert.
+Die modellübergreifenden Seiten vergleichen die beobachteten Ergebnisse der dokumentierten Läufe. Ein Unterschied zwischen zwei Modellen ist kein allgemeiner Qualitäts- oder Neutralitätsnachweis. Provider-Infrastruktur, API-Verhalten und andere technische Randbedingungen können sich unterscheiden; solche Betriebskennzahlen werden deshalb getrennt von den inhaltlichen Auswahlmustern dargestellt.
 
 ## Deployment
 
@@ -100,4 +111,4 @@ Ein sauberer Vergleich zweier Modellgenerationen setzt möglichst identische Ver
 
 ## Methodischer Hinweis
 
-Das Projekt beantwortet nicht „Welche Partei sollte man wählen?“, sondern untersucht, wie sich Modellentscheidungen unter dokumentierten Änderungen der Eingabe unterscheiden. Eine beobachtete Häufigkeit von 100/100 oder 200/200 ist eine Beschreibung dieses Laufs und keine Garantie einer wahren Wahrscheinlichkeit von 100 Prozent.
+Das Projekt beantwortet nicht „Welche Partei sollte man wählen?“, sondern untersucht, wie sich beobachtete Modellentscheidungen unter dokumentierten Bedingungen unterscheiden. Eine beobachtete Häufigkeit von 100/100 oder 200/200 ist eine Beschreibung des jeweiligen Laufs und keine Garantie einer wahren Wahrscheinlichkeit von 100 Prozent.

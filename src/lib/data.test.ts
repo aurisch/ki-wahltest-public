@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { experiment } from '../data/experiments/gpt56-main-v2';
 import { getPair } from './experiments';
 import { pairSlug, partySlug } from './parties';
-import { getPartySummary, partySummaries } from './party-results';
+import { getPartySummary, getPartySummaries } from './party-results';
 import { validateExperiment } from './validate';
 
 describe('Experimentdaten', () => {
@@ -12,7 +12,7 @@ describe('Experimentdaten', () => {
     expect(pairSlug('ÖDP', 'Bündnis 90/Die Grünen')).toBe('gruene-vs-oedp');
   });
   it('finden Paare unabhängig von ihrer Reihenfolge', () => {
-    expect(getPair('ÖDP', 'Bündnis 90/Die Grünen')?.sensitivityPercentagePoints).toBe(91);
+    expect(getPair(experiment, 'ÖDP', 'Bündnis 90/Die Grünen')?.sensitivityPercentagePoints).toBe(91);
   });
   it('halten das Ranking absteigend', () => {
     const shares = experiment.results.ranking.map((row) => row.share);
@@ -29,12 +29,13 @@ describe('Experimentdaten', () => {
     });
   });
   it('berechnet für jede Partei neun Duelle und 1.800 Entscheidungen', () => {
+    const partySummaries = getPartySummaries(experiment);
     expect(partySummaries).toHaveLength(10);
     for (const summary of partySummaries) {
       expect(summary.duels).toHaveLength(9);
       expect(summary.duels.reduce((sum, duel) => sum + duel.selected + duel.opponentSelected, 0)).toBe(1800);
       expect(summary.won + summary.drawn + summary.lost).toBe(9);
     }
-    expect(getPartySummary('SPD')).toMatchObject({ won: 6, drawn: 0, lost: 3 });
+    expect(getPartySummary(experiment, 'SPD')).toMatchObject({ won: 6, drawn: 0, lost: 3 });
   });
 });

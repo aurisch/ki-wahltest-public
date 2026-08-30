@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ModelRankChart from '../../components/ModelRankChart.astro';
+import ModelDivergencePanel from '../../components/ModelDivergencePanel.astro';
+import PositionEffectStat from '../../components/PositionEffectStat.astro';
+import OrderComparison from '../../components/OrderComparison.astro';
+import { buildComparison, getBiggestDivergences, getEffortRows } from '../../lib/comparison';
+import { experiments } from '../../lib/experiments';
+import { pickSurprisePair } from '../../lib/narrative';
+import { formatInteger, formatMinutes, formatPercent, formatUsd } from '../../lib/format';
+import { shortPartyName } from '../../lib/parties';
+
+const comparison = buildComparison(experiments);
+const pending = experiments.filter((experiment) => experiment.status !== 'completed');
+const hasEnoughData = comparison.experiments.length >= 2;
+const divergences = getBiggestDivergences(comparison, comparison.rows.length);
+const effortRows = getEffortRows(experiments);
+---
+<BaseLayout title="Ergebnisse" description="Rangvergleich, größte Unterschiede und Reihenfolgeeffekt über alle getesteten KI-Modelle im KI-Wahltest.">
+  <section class="page"><div class="container">
+    <p class="eyebrow">Modellübergreifend</p><h1>Ergebnisse</h1>
+
+    {hasEnoughData ? (
+      <>
+        <p class="lede">Rangfolge, Auswahlquote und Reihenfolgeeffekt im Vergleich zwischen {comparison.experiments.map((e) => e.model.name).join(' und ')}.</p>
+        <div class="notice interpretation"><strong>Einordnung des Modellvergleichs</strong>Verglichen werden die beobachteten Ausgaben der dokumentierten Modell-/API-Systeme im jeweiligen Versuchsaufbau. Der Vergleich ist weder ein allgemeiner Qualitätsbenchmark noch ein Nachweis politischer Neutralität.</div>
+
+        <h2 class="section-title">Rangfolge im Vergleich</h2>
+        <p class="lede">Jede Linie verfolgt eine Partei über die Modelle hinweg. Ein Sprung nach oben oder unten zeigt, dass sich ihre relative Rangposition zwischen den Modellen verändert hat. Die eingeblendeten Prozentwerte zeigen zusätzlich die jeweilige absolute Auswahlquote.</p>
+        <ModelRankChart comparison={comparison} />
+
+        <h2 class="section-title">Größte Unterschiede je Partei</h2>
+        <p class="lede">Spannweite zwischen der höchsten und der niedrigsten beobachteten Auswahlquote, für alle Parteien.</p>
+        <ModelDivergencePanel divergences={divergences} />
+
+        <h2 class="section-title">Reihenfolgeeffekt im Vergleich</h2>
+        <p class="lede">Bei jedem Modell wurden dieselben zwei Parteien in beiden möglichen Reihenfolgen genannt – bei ansonsten identischem Prompt. Gezeigt werden beobachtete Unterschiede zwischen diesen beiden Bedingungen.</p>
+        <div class="position-examples">
+          {comparison.experiments.map((experiment) => {
+            const pair = pickSurprisePair(experiment);
+            return (
+              <div class="position-example">
+                <h3>{experiment.model.name}</h3>
+                <PositionEffectStat experiment={experiment} />
+                <p class="example-caption">Stärkstes beobachtetes Beispiel: <strong>{shortPartyName(pair.parties[0])}</strong> gegen <strong>{shortPartyName(pair.parties[1])}</strong>.</p>
+                <OrderComparison pair={pair} />
+                <p class="detail-link"><a href={`/experimente/${experiment.id}/duelle/${pair.id}/`}>Dieses Duell vollständig untersuchen →</a></p>
+              </div>
+            );
+          })}
+        </div>
+
+        <h2 class="section-title">Aufwand des Experiments</h2>
+        <p class="lede">Requests, Laufzeit, Tokenverbrauch und Kosten je Modell – eine zusätzliche technische Vergleichsdimension. Sie sagt nichts darüber aus, ob ein Modell inhaltlich „besser" entschieden hat: ein schnelleres oder günstigeres Modell ist deshalb nicht treffsicherer oder neutraler. Laufzeitunterschiede können außerdem API-Auslastung, Rate-Limits, Retry-Verhalten, Prompt Caching und Infrastruktur des jeweiligen Anbieters widerspiegeln, nicht nur das Modell selbst.</p>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tabelle, horizontal scrollbar auf kleinen Bildschirmen">
+          <table class="compare-table">
+            <thead><tr><th scope="col"></th>{effortRows.map(({ experiment }) => <th scope="col">{experiment.model.name}</th>)}</tr></thead>
+            <tbody>
+              <tr><th scope="row">Erfolgreiche Entscheidungen</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.requests.successful)}</td>)}</tr>
+              <tr><th scope="row">Dokumentierter Request-Zeitraum</th>{effortRows.map(({ experiment }) => <td>{formatMinutes(experiment.usage.timing.documentedSpanMinutes)}</td>)}</tr>
+              <tr><th scope="row">Requests/Minute</th>{effortRows.map(({ experiment }) => <td>{experiment.usage.timing.successfulDecisionsPerMinute?.toFixed(1) ?? '–'}</td>)}</tr>
+              <tr><th scope="row">Input-Tokens</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.inputTotal)}</td>)}</tr>
+              <tr><th scope="row">davon Cached Input</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.cachedInputTotal)} <small>({formatPercent(experiment.usage.caching.cachedInputShare, 0)})</small></td>)}</tr>
+              <tr><th scope="row">Output-Tokens</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.outputTotal)}</td>)}</tr>
+              <tr><th scope="row">Gesamtkosten</th>{effortRows.map(({ experiment }) => <td>{formatUsd(experiment.usage.cost.totalUsd)}</td>)}</tr>
+              <tr><th scope="row">Kosten je 1.000 Entscheidungen</th>{effortRows.map(({ experiment }) => <td>{formatUsd(experiment.usage.cost.perThousandDecisionsUsd)}</td>)}</tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="lede"><a href="/methodik/">Zur Methodik (u.a. Prompt Caching, Preisgrundlage) →</a></p>
+
+        {comparison.methodologyDiffers && (
+          <div class="notice interpretation"><strong>Zusätzlicher methodischer Vorbehalt</strong>Die verglichenen Läufe verwenden nicht in jedem Fall dieselbe Prompt-Revision oder dieselben Modellparameter (Reasoning-Effort, Temperatur). Unterschiede können dann eine Mischung aus Modell-, Prompt- und Parametereffekt sein.</div>
+        )}
+
+        <details class="table-details">
+          <summary>Vollständige Tabelle anzeigen</summary>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabelle, horizontal scrollbar auf kleinen Bildschirmen">
+            <table class="compare-table">
+              <thead><tr><th scope="col">Partei</th>{comparison.experiments.map((e) => <th scope="col">{e.model.name}</th>)}</tr></thead>
+              <tbody>
+                {comparison.rows.map((row) => <tr>
+                  <th scope="row">{row.party}</th>
+                  {comparison.experiments.map((e) => {
+                    const entry = row.entries.find((item) => item.experimentId === e.id);
+                    return <td>{entry ? <a href={`/experimente/${e.id}/parteien/`}>{formatPercent(entry.share)} <small>(Rang {entry.rank})</small></a> : '–'}</td>;
+                  })}
+                </tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </>
+    ) : (
+      <>
+        <p class="lede">Ein Vergleich zwischen Modellen ist erst sinnvoll, sobald mindestens zwei Experimente vollständig abgeschlossen und dokumentiert sind.</p>
+        <p class="lede">Aktuell abgeschlossen: {comparison.experiments.length ? comparison.experiments.map((e) => e.model.name).join(', ') : 'noch keines'}.{pending.length > 0 && <> Es laufen noch: {pending.map((e) => e.model.name).join(', ')}.</>}</p>
+        <p class="lede"><a href="/experimente/">Alle Modelle ansehen →</a></p>
+      </>
+    )}
+  </div></section>
+</BaseLayout>
+<style>
+  .section-title{margin-top:4rem;padding-top:2.5rem;border-top:1px solid var(--line);font-size:clamp(1.5rem,3vw,2.1rem)}
+  .position-examples{display:grid;gap:3rem;margin-top:2.5rem}
+  .position-example{padding-top:2.5rem;border-top:1px solid var(--line)}.position-example:first-child{padding-top:0;border-top:0}
+  .position-example h3{font-size:1.2rem}
+  .example-caption{max-width:40rem;margin-top:1.5rem;color:var(--muted)}
+  .detail-link{margin-top:1.5rem}.detail-link a{font-weight:750}
+  .interpretation{max-width:52rem;margin-top:2rem}
+  .table-details{margin-top:3rem}
+  .table-details summary{cursor:pointer;font-weight:700;color:var(--teal-dark)}
+  .table-details summary:hover{color:var(--teal)}
+  .table-wrap{position:relative;overflow-x:auto;margin-top:1.5rem}
+  .table-wrap::after{content:'';position:absolute;top:0;right:0;bottom:0;width:2rem;background:linear-gradient(to right,transparent,var(--paper));pointer-events:none}
+  .compare-table{width:100%;min-width:32rem;border-collapse:collapse}
+  .compare-table th,.compare-table td{padding:.7rem .9rem;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  .compare-table thead th{border-bottom:2px solid var(--ink)}
+  .compare-table small{color:var(--muted)}
+</style>

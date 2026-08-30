@@ -1,5 +1,4 @@
-import { experiment } from '../data/experiments/gpt56-main-v2';
-import type { PairResult, PartyName, PartyResult } from './types';
+import type { Experiment, PairResult, PartyName, PartyResult } from './types';
 
 export type PartyDuel = {
   opponent: PartyName;
@@ -19,7 +18,7 @@ export type PartySummary = {
   strongestOrderEffects: PartyDuel[];
 };
 
-export function getPartySummary(party: PartyName): PartySummary {
+export function getPartySummary(experiment: Experiment, party: PartyName): PartySummary {
   const result = experiment.results.ranking.find((row) => row.party === party);
   if (!result) throw new Error(`Kein Ranking-Ergebnis für ${party}.`);
 
@@ -52,4 +51,6 @@ export function getPartySummary(party: PartyName): PartySummary {
   };
 }
 
-export const partySummaries = experiment.parties.map(getPartySummary);
+export function getPartySummaries(experiment: Experiment): PartySummary[] {
+  return experiment.parties.map((party) => getPartySummary(experiment, party));
+}

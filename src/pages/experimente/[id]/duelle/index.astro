@@ -1,0 +1,8 @@
+---
+import PairMatrix from '../../../../components/PairMatrix.astro';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import { experiments } from '../../../../lib/experiments';
+export function getStaticPaths() { return experiments.map((experiment) => ({ params: { id: experiment.id }, props: { experiment } })); }
+const { experiment } = Astro.props;
+---
+<BaseLayout title={`Duellmatrix – ${experiment.model.name}`} description={`Alle 45 Paarvergleiche des ${experiment.title}.`}><section class="page"><div class="container"><p class="eyebrow">45 Paarungen · {experiment.model.name}</p><h1>Duellmatrix</h1><p class="lede">Jede Zelle zeigt aus Sicht der Zeilenpartei, wie die 200 Entscheidungen des vollständigen Duells verteilt waren. Ein Klick öffnet beide Reihenfolgen.</p><PairMatrix parties={experiment.parties} pairs={experiment.results.pairs} experimentId={experiment.id} /></div></section></BaseLayout>

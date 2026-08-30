@@ -1,5 +1,6 @@
-import source from '../../../public/data/website-data.json';
+import source from '../../../public/data/experiments/gpt-5.6-sol-main-v2/website-data.json';
 import manifest from '../../../public/data/experiments/gpt-5.6-sol-main-v2/manifest.json';
+import usage from '../../../public/data/experiments/gpt-5.6-sol-main-v2/usage.json';
 import { parties, pairSlug } from '../../lib/parties';
 import type { Experiment, PairResult, PartyName } from '../../lib/types';
 
@@ -87,6 +88,7 @@ export const experiment: Experiment = {
     conversation: manifest.requestParameters.conversation,
   },
   parties,
+  usage,
   results: {
     ranking: source.partyRanking.map((item) => ({
       party: toParty(item.party),
@@ -103,11 +105,15 @@ export const experiment: Experiment = {
       total: source.meta.valid,
       secondShare: source.meta.positionSecondShare,
     },
+    positionEffect: {
+      globalFirstPositionLogOdds: source.regularizedBradleyTerry.globalFirstPositionLogOdds,
+      pFirstIfEqual: source.regularizedBradleyTerry.pFirstIfEqual,
+    },
     deterministicBlocks: { perfect: 67, total: 90 },
     deterministicDuels: { perfect: 27, total: 45 },
   },
   provenance: {
-    sourceFiles: ['manifest.json', 'jobs.jsonl', 'results.jsonl', 'website-data.json', 'pairwise-analysis.csv', 'analysis-report.md'],
+    sourceFiles: ['manifest.json', 'jobs.jsonl', 'results.jsonl', 'website-data.json', 'pairwise-analysis.csv', 'analysis-report.md', 'usage.json'],
     sha256: {
       'manifest.json': '4b3530aa7a389d5276669fa1bbd639d84b7510812b8452336e5f00aaf5c05690',
       'jobs.jsonl': 'bdf5b4040951b6d7e913c62bb7f01666d9592e66b55fee6cbbd453065e59ddc2',
@@ -115,8 +121,10 @@ export const experiment: Experiment = {
       'website-data.json': '3dc638ad90e8b04a03ab449630547ee2da6ad88d68d026fff14ea1668376161c',
       'pairwise-analysis.csv': '240797bbff81252b576a7449cbc15eddbdd0247e3afa99cc8d32f4b62d4afe33',
       'analysis-report.md': '5853b582f02a7df1916b3c70dfc92509edff136d153db238f0f31c75680caf47',
+      'usage.json': 'aed4697f70000a36c3739f07155cdd891b33ff861f4cef3952c96f9bb59a336f',
     },
     publicBasePath: '/data/experiments/gpt-5.6-sol-main-v2',
+    derivedBasePath: '/data/experiments/gpt-5.6-sol-main-v2',
   },
   notes: ['Die Zeitangaben beschreiben den dokumentierten Experiment- und Request-Zeitraum, nicht zwingend die gesamte Programmlaufzeit.'],
 };

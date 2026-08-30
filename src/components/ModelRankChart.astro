@@ -1,0 +1,121 @@
+---
+import { shortPartyName } from '../lib/parties';
+import { formatPercent } from '../lib/format';
+import type { Comparison } from '../lib/comparison';
+
+const { comparison } = Astro.props as { comparison: Comparison };
+const columns = comparison.experiments;
+const rowCount = comparison.rows.length;
+
+const rowHeight = 38;
+const topPadding = 34;
+const bottomPadding = 14;
+const leftPadding = 176;
+const rightPadding = 176;
+const colWidth = 220;
+
+const width = leftPadding + Math.max(columns.length - 1, 0) * colWidth + rightPadding;
+const height = topPadding + bottomPadding + (rowCount - 1) * rowHeight;
+
+const x = (columnIndex: number) => leftPadding + columnIndex * colWidth;
+const y = (rank: number) => topPadding + (rank - 1) * rowHeight;
+
+type Point = { columnIndex: number; x: number; y: number; rank: number; share: number };
+
+type Direction = 'up' | 'down' | 'flat';
+
+const lines = comparison.rows.map((row) => {
+  const points: Point[] = columns
+    .map((experiment, columnIndex) => {
+      const entry = row.entries.find((item) => item.experimentId === experiment.id);
+      if (!entry) return null;
+      return { columnIndex, x: x(columnIndex), y: y(entry.rank), rank: entry.rank, share: entry.share };
+    })
+    .filter((point): point is Point => point !== null);
+  // Richtung = Rang beim letzten vs. ersten Modell in der Reihe. Ein Rang ist
+  // relativ zu den anderen Parteien und sagt für sich allein nicht, ob die
+  // absolute Auswahlquote gestiegen oder gefallen ist.
+  const direction: Direction = points.length < 2 || points[0]!.rank === points.at(-1)!.rank
+    ? 'flat'
+    : points.at(-1)!.rank < points[0]!.rank ? 'up' : 'down';
+  return { party: row.party, points, direction };
+});
+
+function smoothPath(points: Point[]): string {
+  if (points.length === 0) return '';
+  let d = `M ${points[0]!.x},${points[0]!.y}`;
+  for (let i = 1; i < points.length; i += 1) {
+    const prev = points[i - 1]!;
+    const curr = points[i]!;
+    const midX = (prev.x + curr.x) / 2;
+    d += ` C ${midX},${prev.y} ${midX},${curr.y} ${curr.x},${curr.y}`;
+  }
+  return d;
+}
+
+const ranks = Array.from({ length: rowCount }, (_, index) => index + 1);
+---
+
+<div class="rank-chart-wrap" tabindex="0" role="region" aria-label={`Rangvergleich der Parteien über ${columns.length} Modelle`}>
+  <svg class="rank-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Bump-Chart: Rangfolge der Parteien je Modell (${columns.map((e) => e.model.name).join(', ')})`}>
+    <g class="rank-grid">
+      {ranks.map((rank) => <line x1={x(0)} x2={x(columns.length - 1)} y1={y(rank)} y2={y(rank)} class="grid-line" />)}
+    </g>
+
+    {columns.map((experiment, columnIndex) => (
+      <text class="col-label" x={x(columnIndex)} y={topPadding - 16} text-anchor="middle">{experiment.model.name}</text>
+    ))}
+
+    <g class="rank-lines">
+      {lines.map(({ party, points, direction }) => (
+        <g class:list={['rank-line', `rank-line--${direction}`]}>
+          <title>{`${party}: ` + points.map((p) => `Rang ${p.rank} bei ${columns[p.columnIndex]!.model.name} (${formatPercent(p.share)})`).join(', ')}</title>
+          {points.length > 1 && <path d={smoothPath(points)} fill="none" class="rank-line-path" />}
+          {points.map((p, index) => (
+            <>
+              <circle cx={p.x} cy={p.y} r="5" class="rank-node" />
+              {index === 0 && (
+                <text x={p.x - 16} y={p.y} dy="0.32em" text-anchor="end" class="party-label party-label--start">{shortPartyName(party)} <tspan class="party-share">{formatPercent(p.share, 0)}</tspan></text>
+              )}
+              {index === points.length - 1 && (
+                <text x={p.x + 16} y={p.y} dy="0.32em" text-anchor="start" class="party-label party-label--end"><tspan class="party-share">{formatPercent(p.share, 0)}</tspan> {shortPartyName(party)}</text>
+              )}
+            </>
+          ))}
+        </g>
+      ))}
+    </g>
+  </svg>
+</div>
+<ul class="rank-legend">
+  <li><i class="rank-legend-swatch rank-legend-swatch--up"></i>Höherer Rang</li>
+  <li><i class="rank-legend-swatch rank-legend-swatch--down"></i>Niedrigerer Rang</li>
+  <li><i class="rank-legend-swatch rank-legend-swatch--flat"></i>Gleicher Rang</li>
+</ul>
+
+<style>
+  .rank-legend { display: flex; flex-wrap: wrap; gap: .4rem 1.5rem; margin: 1rem 0 0; padding: 0; list-style: none; color: var(--muted); font-size: .82rem; }
+  .rank-legend li { display: flex; align-items: center; gap: .5rem; }
+  .rank-legend-swatch { display: inline-block; width: 1.1rem; height: 2px; border-radius: 1px; }
+  .rank-legend-swatch--up { background: var(--teal); }
+  .rank-legend-swatch--down { background: #256abf; }
+  .rank-legend-swatch--flat { background: var(--line-strong); }
+  .rank-chart-wrap { overflow-x: auto; margin-top: 2rem; padding-bottom: .5rem; }
+  .rank-chart { display: block; min-width: 36rem; width: 100%; height: auto; font-family: inherit; }
+  .grid-line { stroke: var(--line-strong); stroke-width: 1; opacity: .55; }
+  .col-label { font-size: .82rem; font-weight: 750; fill: var(--ink); }
+  .rank-line-path { stroke: var(--line-strong); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; transition: stroke .15s var(--ease), stroke-width .15s var(--ease); }
+  .rank-node { fill: var(--line-strong); stroke: var(--surface); stroke-width: 2; transition: fill .15s var(--ease); }
+  .rank-line--up .rank-line-path { stroke: var(--teal); }
+  .rank-line--up .rank-node { fill: var(--teal); }
+  .rank-line--down .rank-line-path { stroke: #256abf; }
+  .rank-line--down .rank-node { fill: #256abf; }
+  .party-label { font-size: .74rem; fill: var(--muted); transition: fill .15s var(--ease), font-weight .15s var(--ease); }
+  .party-share { fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .rank-lines .rank-line { cursor: pointer; opacity: .78; }
+  .rank-lines:hover .rank-line { opacity: .25; }
+  .rank-lines .rank-line:hover { opacity: 1; }
+  .rank-lines .rank-line:hover .rank-line-path { stroke-width: 2.6; }
+  .rank-lines .rank-line:hover .party-label { fill: var(--ink); font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .rank-line-path, .party-label, .rank-node { transition: none; } }
+</style>

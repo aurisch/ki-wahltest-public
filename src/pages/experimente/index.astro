@@ -1,8 +1,24 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { experiments } from '../../lib/experiments';
+import { formatInteger, formatPercent } from '../../lib/format';
 ---
-<BaseLayout title="Experimente" description="Versionierte und eingefrorene Experimente des KI-Wahltests."><section class="page"><div class="container">
-  <p class="eyebrow">Archiv</p><h1>Experimente</h1><p class="lede">Jeder Eintrag beschreibt einen abgeschlossenen, eingefrorenen Lauf mit eigener Modell-, Prompt- und Parameterkombination.</p>
-  <div class="link-list narrow">{experiments.map((item) => <a href={`/experimente/${item.id}/`}><span>{item.title} <span class="tag">abgeschlossen</span></span><span>{item.parameters.totalRequests.toLocaleString('de-DE')} Entscheidungen</span></a>)}</div>
-</div></section></BaseLayout>
+<BaseLayout title="Modelle" description="Die im KI-Wahltest getesteten KI-Modelle im Überblick, mit Link zur jeweiligen Story, den Ergebnissen und den Rohdaten.">
+  <section class="page"><div class="container">
+    <p class="eyebrow">Modelle</p><h1>Die getesteten KI-Modelle</h1>
+    <p class="lede">Jedes Modell durchläuft denselben Versuchsaufbau: {experiments[0]?.parties.length ?? 10} Parteien, {experiments[0]?.results.pairs.length ?? 45} Paarungen, beide Reihenfolgen je Paar. Ein Modell erscheint hier erst, wenn sein Lauf vollständig abgeschlossen und dokumentiert ist.</p>
+    <div class="model-grid">
+      {experiments.map((experiment) => (
+        <a class="model-card" href={experiment.status === 'completed' ? `/experimente/${experiment.id}/story/` : `/experimente/${experiment.id}/`}>
+          <span class="model-name">{experiment.model.name}</span>
+          <span class:list={['tag', experiment.status]}>{experiment.status === 'completed' ? 'abgeschlossen' : 'läuft'}</span>
+          {experiment.status === 'completed'
+            ? <p class="model-stat"><strong>{formatPercent(experiment.results.ranking[0]!.share)}</strong><span>höchste Auswahlquote ({experiment.results.ranking[0]!.party}) · {formatInteger(experiment.parameters.totalRequests)} Entscheidungen</span></p>
+            : <p class="model-stat"><span>Ergebnisse folgen nach Abschluss des Laufs.</span></p>}
+          <i aria-hidden="true">→</i>
+        </a>
+      ))}
+    </div>
+    <p class="lede"><a href="/ergebnisse/">Modelle im direkten Vergleich →</a></p>
+  </div></section>
+</BaseLayout>

@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { experiments } from '../../../lib/experiments';
+import { formatInteger, formatMinutes, formatPercent, formatUsd } from '../../../lib/format';
+export function getStaticPaths() { return experiments.map((experiment) => ({ params: { id: experiment.id }, props: { experiment } })); }
+const { experiment } = Astro.props;
+const { usage } = experiment;
+---
+<BaseLayout title={`Daten – ${experiment.model.name}`} description={`Quellen, abgeleitete Dateien und Prüfsummen des ${experiment.title}.`}><article class="page"><div class="container prose"><p class="eyebrow">Offene Daten · {experiment.model.name}</p><h1>Daten und Provenienz</h1><p class="lede">Die Website wird ausschließlich aus versionierten, eingefrorenen Dateien gebaut. Sie erzeugt keine Versuchsdaten zur Laufzeit.</p>
+  <h2>Maßgebliche Primärquellen</h2><p>Die folgenden Originaldateien sind unverändert veröffentlicht. Sie sind gegenüber allen abgeleiteten Tabellen und Website-Darstellungen maßgeblich.</p><div class="downloads"><a class="download" href={`${experiment.provenance.publicBasePath}/manifest.json`} download><strong>Manifest</strong><span>Vollständige Versuchskonfiguration einschließlich aller 90 Prompttexte und SHA-256-Hashes.</span><small>manifest.json</small></a><a class="download" href={`${experiment.provenance.publicBasePath}/jobs.jsonl`} download><strong>Eingefrorene Jobliste</strong><span>Vorab erzeugte, deterministisch gemischte Reihenfolge aller 9.000 Jobs.</span><small>jobs.jsonl</small></a><a class="download" href={`${experiment.provenance.publicBasePath}/results.jsonl`} download><strong>Vollständige Rohantworten</strong><span>Protokollierte API-Versuche mit Antworten, Laufzeiten, Tokenverbrauch sowie Fehler- und Retry-Versuchen.</span><small>results.jsonl</small></a></div>
+  <h2>Abgeleitete Website- und Analysedaten</h2><p>Diese Dateien vereinfachen Darstellung und Analyse. Sie sind keine Primärquelle.</p><div class="link-list"><a href={`${experiment.provenance.derivedBasePath}/website-data.json`} download>website-data.json · abgeleitete Website-Daten</a><a href={`${experiment.provenance.derivedBasePath}/pairwise-analysis.csv`} download>pairwise-analysis.csv · abgeleitete Paaranalyse</a><a href={`${experiment.provenance.derivedBasePath}/analysis-report.md`} download>analysis-report.md · Analysebericht</a><a href={`${experiment.provenance.derivedBasePath}/usage.json`} download>usage.json · Betriebs- und Kostenkennzahlen</a></div>
+
+  <h2>Betrieb, Tokenverbrauch und Kosten</h2>
+  <p>Automatisch aus <code>results.jsonl</code> und <code>manifest.json</code> abgeleitet, nicht manuell gepflegt. Der Zeitraum zwischen erstem und letztem Request ist der <strong>dokumentierte Request-Zeitraum</strong>, nicht zwingend die gesamte Programmlaufzeit des Runners (Vorbereitung, Auswertung etc. sind nicht enthalten).</p>
+
+  <h3>Requests</h3>
+  <dl class="meta-list">
+    <dt>Erfolgreiche Entscheidungen</dt><dd>{formatInteger(usage.requests.successful)}</dd>
+    <dt>Attempts gesamt</dt><dd>{formatInteger(usage.requests.totalAttempts)}</dd>
+    <dt>Fehlgeschlagene Attempts</dt><dd>{formatInteger(usage.requests.failed)}</dd>
+    <dt>Retries</dt><dd>{formatInteger(usage.requests.retries)}</dd>
+    <dt>Erfolgsquote</dt><dd>{formatPercent(usage.requests.successRate, 2)}</dd>
+  </dl>
+
+  <h3>Laufzeit</h3>
+  <dl class="meta-list">
+    <dt>Dokumentierter Request-Zeitraum</dt><dd>{formatMinutes(usage.timing.documentedSpanMinutes)} ({new Date(usage.timing.firstRequestUtc).toISOString()} – {new Date(usage.timing.lastSuccessfulRequestUtc).toISOString()})</dd>
+    <dt>Ø erfolgreiche Entscheidungen/Minute</dt><dd>{usage.timing.successfulDecisionsPerMinute?.toFixed(2) ?? '–'}</dd>
+    {usage.timing.durationMsStats && (<>
+      <dt>durationMs – Median</dt><dd>{formatInteger(usage.timing.durationMsStats.median)} ms</dd>
+      <dt>durationMs – Mittelwert</dt><dd>{formatInteger(Math.round(usage.timing.durationMsStats.mean))} ms</dd>
+      <dt>durationMs – p95</dt><dd>{formatInteger(usage.timing.durationMsStats.p95)} ms</dd>
+      <dt>durationMs – Min/Max</dt><dd>{formatInteger(usage.timing.durationMsStats.min)} ms / {formatInteger(usage.timing.durationMsStats.max)} ms</dd>
+    </>)}
+  </dl>
+  <p class="notice">Keine Aussage wie „dieses Modell ist schneller" ohne Vorbehalt: Laufzeit kann API-Auslastung, Rate-Limits, Retry-Verhalten und Infrastruktur des jeweiligen Anbieters widerspiegeln, nicht nur das Modell selbst.</p>
+
+  <h3>Tokenverbrauch (erfolgreiche Entscheidungen)</h3>
+  <dl class="meta-list">
+    <dt>Input-Tokens gesamt</dt><dd>{formatInteger(usage.tokens.inputTotal)}</dd>
+    <dt>davon Cached Input</dt><dd>{formatInteger(usage.tokens.cachedInputTotal)}</dd>
+    <dt>davon nicht gecacht</dt><dd>{formatInteger(usage.tokens.uncachedInputTotal)}</dd>
+    <dt>Output-Tokens gesamt</dt><dd>{formatInteger(usage.tokens.outputTotal)}</dd>
+    <dt>davon Reasoning-Tokens</dt><dd>{formatInteger(usage.tokens.reasoningTotal)}</dd>
+    <dt>Tokens gesamt</dt><dd>{formatInteger(usage.tokens.totalTokens)}</dd>
+    <dt>Ø Tokens je erfolgreicher Entscheidung</dt><dd>{usage.tokens.averagePerSuccessfulDecision.total.toFixed(1)}</dd>
+    <dt>Tokenverbrauch fehlgeschlagener Attempts</dt><dd>{formatInteger(usage.tokens.failedAttemptsTokenTotal)}</dd>
+  </dl>
+
+  <h3>Prompt Caching</h3>
+  {usage.caching.requestsWithCacheHit > 0 ? (
+    <dl class="meta-list">
+      <dt>Requests mit Cache-Hit</dt><dd>{formatInteger(usage.caching.requestsWithCacheHit)} ({formatPercent(usage.caching.cacheHitShare)})</dd>
+      <dt>Gecachte Input-Tokens gesamt</dt><dd>{formatInteger(usage.caching.cachedTokensTotal)}</dd>
+      <dt>Anteil gecachter Input-Tokens</dt><dd>{formatPercent(usage.caching.cachedInputShare)}</dd>
+      <dt>Ø gecachte Tokens je Hit-Request</dt><dd>{usage.caching.averageCachedTokensPerHitRequest.toFixed(1)}</dd>
+    </dl>
+  ) : (
+    <p>Keine bzw. praktisch keine gecachten Input-Tokens in diesem Lauf (0 Requests mit Cache-Hit). Das wird hier transparent ausgewiesen, ohne daraus eine Wertung abzuleiten.</p>
+  )}
+
+  <h3>Kosten</h3>
+  <p>Preisgrundlage (Pricing-Snapshot, zum Experimentzeitpunkt gültig und dauerhaft eingefroren – spätere Preisänderungen des Anbieters wirken sich nicht rückwirkend aus): <strong>${usage.cost.pricingSnapshot.inputPerMillionUsd.toFixed(2)}</strong>/Mio. Input, <strong>${usage.cost.pricingSnapshot.cachedInputPerMillionUsd.toFixed(2)}</strong>/Mio. Cached Input, <strong>${usage.cost.pricingSnapshot.outputPerMillionUsd.toFixed(2)}</strong>/Mio. Output, gültig ab {usage.cost.pricingSnapshot.effectiveFrom.slice(0, 10)}. Quelle: {usage.cost.pricingSnapshot.source}</p>
+  <dl class="meta-list">
+    <dt>Gesamtkosten</dt><dd>{formatUsd(usage.cost.totalUsd, 4)}</dd>
+    <dt>Protokollierte Providerkosten</dt><dd>{usage.cost.providerReportedUsd === null ? 'vom Anbieter nicht pro Response geliefert' : formatUsd(usage.cost.providerReportedUsd, 4)}</dd>
+    <dt>Rechnerisch aus Tokenmengen</dt><dd>{formatUsd(usage.cost.tokenBasedUsd, 4)}</dd>
+    <dt>Kosten je 1.000 Entscheidungen</dt><dd>{formatUsd(usage.cost.perThousandDecisionsUsd, 4)}</dd>
+    <dt>Kosten je Entscheidung</dt><dd>{formatUsd(usage.cost.perDecisionUsd, 6)}</dd>
+  </dl>
+  {usage.cost.hypotheticalWithoutCachingUsd !== null && (
+    <p class="notice"><strong>Simulation, keine tatsächlichen Kosten:</strong> Ohne Prompt-Caching hätten dieselben Tokenmengen rechnerisch {formatUsd(usage.cost.hypotheticalWithoutCachingUsd, 4)} gekostet (statt {formatUsd(usage.cost.tokenBasedUsd, 4)} tatsächlich).</p>
+  )}
+
+  <h2>SHA-256</h2><dl class="meta-list">{Object.entries(experiment.provenance.sha256).map(([file, hash]) => <><dt>{file}</dt><dd><code>{hash}</code></dd></>)}</dl>
+</div></article></BaseLayout>
+<style>.downloads{display:grid;gap:1rem;margin-top:1.5rem}.download{display:grid;gap:.35rem;padding:1.2rem;border:1px solid var(--line);border-radius:var(--radius-lg);color:var(--ink);background:var(--surface);box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color .18s var(--ease),box-shadow .18s var(--ease),transform .18s var(--ease)}.download:hover{border-color:var(--teal);box-shadow:var(--shadow-md);transform:translateY(-2px)}.download span{color:var(--muted);font-size:.9rem}.download small{color:var(--teal);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.meta-list code{overflow-wrap:anywhere;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}</style>

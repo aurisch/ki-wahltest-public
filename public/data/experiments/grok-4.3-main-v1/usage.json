@@ -1,0 +1,62 @@
+{
+  "requests": {
+    "successful": 9000,
+    "totalAttempts": 9025,
+    "failed": 25,
+    "retries": 25,
+    "successRate": 0.997229916897507
+  },
+  "timing": {
+    "firstRequestUtc": "2026-08-29T20:15:57.320Z",
+    "lastSuccessfulRequestUtc": "2026-08-29T21:58:59.226Z",
+    "documentedSpanMs": 6181906,
+    "documentedSpanMinutes": 103.03176666666667,
+    "successfulDecisionsPerMinute": 87.35170026849325,
+    "durationMsStats": {
+      "median": 628,
+      "mean": 648.9463333333333,
+      "p95": 855,
+      "min": 367,
+      "max": 8381
+    }
+  },
+  "tokens": {
+    "inputTotal": 3447000,
+    "cachedInputTotal": 2923008,
+    "uncachedInputTotal": 523992,
+    "outputTotal": 32151,
+    "reasoningTotal": 0,
+    "totalTokens": 3479151,
+    "averagePerSuccessfulDecision": {
+      "input": 383,
+      "cachedInput": 324.77866666666665,
+      "output": 3.5723333333333334,
+      "total": 386.57233333333335
+    },
+    "failedAttemptsTokenTotal": 9686
+  },
+  "caching": {
+    "requestsWithCacheHit": 9000,
+    "cacheHitShare": 1,
+    "cachedTokensTotal": 2923008,
+    "cachedInputShare": 0.8479860748476936,
+    "averageCachedTokensPerHitRequest": 324.77866666666665
+  },
+  "cost": {
+    "pricingSnapshot": {
+      "provider": "xai",
+      "model": "grok-4.3",
+      "inputPerMillionUsd": 1.25,
+      "cachedInputPerMillionUsd": 0.2,
+      "outputPerMillionUsd": 2.5,
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "source": "xAI model documentation: docs.x.ai/developers/models/grok-4.3. Provider-reported cost_in_usd_ticks in results.jsonl independently reproduces the aggregate billed cost; tick conversion is documented at docs.x.ai/developers/cost-tracking."
+    },
+    "totalUsd": 1.32367595,
+    "providerReportedUsd": 1.32367595,
+    "tokenBasedUsd": 1.3236759499999997,
+    "perThousandDecisionsUsd": 0.14707510555555556,
+    "perDecisionUsd": 0.00014707510555555554,
+    "hypotheticalWithoutCachingUsd": 4.40136875
+  }
+}
