@@ -40,7 +40,7 @@ export const PRICING_SNAPSHOTS = [
     cachedInputPerMillionUsd: 0.5,
     outputPerMillionUsd: 25.0,
     effectiveFrom: '2026-01-01T00:00:00.000Z', // Snapshot covering the experiment date.
-    source: 'Anthropic model documentation: platform.claude.com/docs/en/about-claude/pricing (Claude Opus 5 base input/output/cache-hit pricing). The recorded run has 0 cache-write and 0 cache-read tokens throughout, so the 5-minute (1.25x) / 1-hour (2x) cache-write multipliers were never exercised and are not modeled here.',
+    source: 'Anthropic model documentation: platform.claude.com/docs/en/about-claude/pricing (Claude-Opus-5 base input/output/cache-hit pricing). The recorded run has 0 cache-write and 0 cache-read tokens throughout, so the 5-minute (1.25x) / 1-hour (2x) cache-write multipliers were never exercised and are not modeled here.',
   },
 ];
 

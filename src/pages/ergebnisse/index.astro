@@ -28,9 +28,10 @@ const effortRows = getEffortRows(experiments);
       <>
         <p class="lede">Rangfolge, Auswahlquote und Reihenfolgeeffekt im Vergleich zwischen {modelNameList}.</p>
         <div class="notice interpretation"><strong>Einordnung des Modellvergleichs</strong>Verglichen werden die beobachteten Ausgaben der dokumentierten Modell-/API-Systeme im jeweiligen Versuchsaufbau. Der Vergleich ist weder ein allgemeiner Qualitätsbenchmark noch ein Nachweis politischer Neutralität.</div>
+        <div class="notice interpretation"><strong>Gültige Antworten und Fehlversuche</strong>Die Hauptauswertung verwendet je Job die erste protokollierte gültige Parteiauswahl. GPT-5.6-Sol hatte 0 ungültige Modellausgaben, Grok-4.3 hatte 25 und Claude-Opus-5 hatte 321; technische Fehlversuche werden getrennt protokolliert. Beim Opus-Lauf waren die ungültigen Ausgaben zudem stark auf einzelne Paarungen konzentriert. Verweigerungen oder andere ungültige Ausgaben werden keiner Partei zugerechnet. <a href="/methodik/">Details und Einordnung →</a></div>
 
         <h2 class="section-title">Rangfolge im Vergleich</h2>
-        <p class="lede">Jede Linie verfolgt eine Partei über die Modelle hinweg. Ein Sprung nach oben oder unten zeigt, dass sich ihre relative Rangposition zwischen den Modellen verändert hat. Die eingeblendeten Prozentwerte zeigen zusätzlich die jeweilige absolute Auswahlquote.</p>
+        <p class="lede">Jede Linie verfolgt eine Partei über die Modelle hinweg. Ein Sprung nach oben oder unten zeigt, dass sich ihre relative Rangposition zwischen den Modellen verändert hat. Die eingeblendeten Prozentwerte zeigen zusätzlich die jeweilige absolute Auswahlquote. Die Spaltenreihenfolge dient ausschließlich der Darstellung; sie ist weder eine Rangfolge der Modelle noch eine zeitliche oder qualitative Achse.</p>
         <ModelRankChart comparison={comparison} />
 
         <h2 class="section-title">Größte Unterschiede je Partei</h2>
@@ -76,7 +77,7 @@ const effortRows = getEffortRows(experiments);
         <p class="lede"><a href="/methodik/">Zur Methodik (u.a. Prompt Caching, Preisgrundlage) →</a></p>
 
         {comparison.methodologyDiffers && (
-          <div class="notice interpretation"><strong>Zusätzlicher methodischer Vorbehalt</strong>Die verglichenen Läufe verwenden nicht in jedem Fall dieselbe Prompt-Revision oder dieselben Modellparameter (Reasoning-Effort, Temperatur). Unterschiede können dann eine Mischung aus Modell-, Prompt- und Parametereffekt sein.</div>
+          <div class="notice interpretation"><strong>Zusätzlicher methodischer Vorbehalt</strong>Die verglichenen Läufe verwenden nicht in jedem Fall dieselbe Prompt-Revision oder dieselben Modellparameter (Reasoning-Effort, Temperatur, maximale Ausgabelänge). Unterschiede können dann eine Mischung aus Modell-, Prompt- und Parametereffekt sein.</div>
         )}
 
         <details class="table-details">
@@ -114,6 +115,7 @@ const effortRows = getEffortRows(experiments);
   .example-caption{max-width:40rem;margin-top:1.5rem;color:var(--muted)}
   .detail-link{margin-top:1.5rem}.detail-link a{font-weight:750}
   .interpretation{max-width:52rem;margin-top:2rem}
+  .interpretation a{font-weight:700}
   .table-details{margin-top:3rem}
   .table-details summary{cursor:pointer;font-weight:700;color:var(--teal-dark)}
   .table-details summary:hover{color:var(--teal)}

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "audit:data": "node scripts/audit-data.mjs && node scripts/audit-derived-semantics.mjs",
+    "audit:retries": "node scripts/audit-retries.mjs",
+    "audit:data": "node scripts/audit-data.mjs && node scripts/audit-derived-semantics.mjs && npm run audit:retries",
     "audit:site": "node scripts/audit-site.mjs && node scripts/audit-copy-semantics.mjs",
     "check:launch": "npm run build && npm run audit:site && node scripts/check-launch.mjs",
     "validate:data": "npm run audit:data",

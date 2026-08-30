@@ -52,11 +52,11 @@ const btAbilities = new Map(source.regularizedBradleyTerry.withPosition.map((ite
 
 export const experiment: Experiment = {
   id: 'opus-5-main-v1',
-  title: 'Claude Opus 5 – 10-Parteien-Hauptlauf',
+  title: 'Claude-Opus-5 – 10-Parteien-Hauptlauf',
   description:
     'Ein eingefrorenes Experiment mit 9.000 paarweisen Entscheidungen zwischen zehn deutschen Parteien.',
   status: 'completed',
-  model: { name: 'Claude Opus 5', exactModelId: 'claude-opus-5' },
+  model: { name: 'Claude-Opus-5', exactModelId: 'claude-opus-5' },
   timeline: {
     createdAtUtc: manifest.createdAt,
     firstRequestUtc: '2026-08-29T19:48:01.162Z',

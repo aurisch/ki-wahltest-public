@@ -103,7 +103,7 @@ Die Primärdaten werden nicht nachträglich verändert. Abgeleitete Dateien müs
 
 ## Modellvergleiche
 
-Die modellübergreifenden Seiten vergleichen die beobachteten Ergebnisse der dokumentierten Läufe. Ein Unterschied zwischen zwei Modellen ist kein allgemeiner Qualitäts- oder Neutralitätsnachweis. Provider-Infrastruktur, API-Verhalten und andere technische Randbedingungen können sich unterscheiden; solche Betriebskennzahlen werden deshalb getrennt von den inhaltlichen Auswahlmustern dargestellt.
+Die modellübergreifenden Seiten vergleichen die beobachteten Ergebnisse der dokumentierten Läufe. Ein Unterschied zwischen Modellen ist kein allgemeiner Qualitäts- oder Neutralitätsnachweis. Provider-Infrastruktur, API-Verhalten und andere technische Randbedingungen können sich unterscheiden; solche Betriebskennzahlen werden deshalb getrennt von den inhaltlichen Auswahlmustern dargestellt.
 
 ## Deployment
 

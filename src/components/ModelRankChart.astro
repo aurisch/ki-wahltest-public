@@ -22,8 +22,6 @@ const y = (rank: number) => topPadding + (rank - 1) * rowHeight;
 
 type Point = { columnIndex: number; x: number; y: number; rank: number; share: number };
 
-type Direction = 'up' | 'down' | 'flat';
-
 const lines = comparison.rows.map((row) => {
   const points: Point[] = columns
     .map((experiment, columnIndex) => {
@@ -32,13 +30,7 @@ const lines = comparison.rows.map((row) => {
       return { columnIndex, x: x(columnIndex), y: y(entry.rank), rank: entry.rank, share: entry.share };
     })
     .filter((point): point is Point => point !== null);
-  // Richtung = Rang beim letzten vs. ersten Modell in der Reihe. Ein Rang ist
-  // relativ zu den anderen Parteien und sagt für sich allein nicht, ob die
-  // absolute Auswahlquote gestiegen oder gefallen ist.
-  const direction: Direction = points.length < 2 || points[0]!.rank === points.at(-1)!.rank
-    ? 'flat'
-    : points.at(-1)!.rank < points[0]!.rank ? 'up' : 'down';
-  return { party: row.party, points, direction };
+  return { party: row.party, points };
 });
 
 function smoothPath(points: Point[]): string {
@@ -67,8 +59,8 @@ const ranks = Array.from({ length: rowCount }, (_, index) => index + 1);
     ))}
 
     <g class="rank-lines">
-      {lines.map(({ party, points, direction }) => (
-        <g class:list={['rank-line', `rank-line--${direction}`]}>
+      {lines.map(({ party, points }) => (
+        <g class="rank-line">
           <title>{`${party}: ` + points.map((p) => `Rang ${p.rank} bei ${columns[p.columnIndex]!.model.name} (${formatPercent(p.share)})`).join(', ')}</title>
           {points.length > 1 && <path d={smoothPath(points)} fill="none" class="rank-line-path" />}
           {points.map((p, index) => (
@@ -87,35 +79,21 @@ const ranks = Array.from({ length: rowCount }, (_, index) => index + 1);
     </g>
   </svg>
 </div>
-<ul class="rank-legend">
-  <li><i class="rank-legend-swatch rank-legend-swatch--up"></i>Höherer Rang</li>
-  <li><i class="rank-legend-swatch rank-legend-swatch--down"></i>Niedrigerer Rang</li>
-  <li><i class="rank-legend-swatch rank-legend-swatch--flat"></i>Gleicher Rang</li>
-</ul>
 
 <style>
-  .rank-legend { display: flex; flex-wrap: wrap; gap: .4rem 1.5rem; margin: 1rem 0 0; padding: 0; list-style: none; color: var(--muted); font-size: .82rem; }
-  .rank-legend li { display: flex; align-items: center; gap: .5rem; }
-  .rank-legend-swatch { display: inline-block; width: 1.1rem; height: 2px; border-radius: 1px; }
-  .rank-legend-swatch--up { background: var(--teal); }
-  .rank-legend-swatch--down { background: #256abf; }
-  .rank-legend-swatch--flat { background: var(--line-strong); }
   .rank-chart-wrap { overflow-x: auto; margin-top: 2rem; padding-bottom: .5rem; }
   .rank-chart { display: block; min-width: 36rem; width: 100%; height: auto; font-family: inherit; }
   .grid-line { stroke: var(--line-strong); stroke-width: 1; opacity: .55; }
   .col-label { font-size: .82rem; font-weight: 750; fill: var(--ink); }
   .rank-line-path { stroke: var(--line-strong); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; transition: stroke .15s var(--ease), stroke-width .15s var(--ease); }
   .rank-node { fill: var(--line-strong); stroke: var(--surface); stroke-width: 2; transition: fill .15s var(--ease); }
-  .rank-line--up .rank-line-path { stroke: var(--teal); }
-  .rank-line--up .rank-node { fill: var(--teal); }
-  .rank-line--down .rank-line-path { stroke: #256abf; }
-  .rank-line--down .rank-node { fill: #256abf; }
   .party-label { font-size: .74rem; fill: var(--muted); transition: fill .15s var(--ease), font-weight .15s var(--ease); }
   .party-share { fill: var(--muted); font-variant-numeric: tabular-nums; }
   .rank-lines .rank-line { cursor: pointer; opacity: .78; }
   .rank-lines:hover .rank-line { opacity: .25; }
   .rank-lines .rank-line:hover { opacity: 1; }
-  .rank-lines .rank-line:hover .rank-line-path { stroke-width: 2.6; }
+  .rank-lines .rank-line:hover .rank-line-path { stroke: var(--ink); stroke-width: 2.6; }
+  .rank-lines .rank-line:hover .rank-node { fill: var(--ink); }
   .rank-lines .rank-line:hover .party-label { fill: var(--ink); font-weight: 700; }
   @media (prefers-reduced-motion: reduce) { .rank-line-path, .party-label, .rank-node { transition: none; } }
 </style>
