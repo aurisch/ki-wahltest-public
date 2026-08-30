@@ -13,6 +13,10 @@ import { shortPartyName } from '../../lib/parties';
 const comparison = buildComparison(experiments);
 const pending = experiments.filter((experiment) => experiment.status !== 'completed');
 const hasEnoughData = comparison.experiments.length >= 2;
+const modelNames = comparison.experiments.map((e) => e.model.name);
+const modelNameList = modelNames.length > 1
+  ? `${modelNames.slice(0, -1).join(', ')} und ${modelNames.at(-1)}`
+  : modelNames[0] ?? '';
 const divergences = getBiggestDivergences(comparison, comparison.rows.length);
 const effortRows = getEffortRows(experiments);
 ---
@@ -22,7 +26,7 @@ const effortRows = getEffortRows(experiments);
 
     {hasEnoughData ? (
       <>
-        <p class="lede">Rangfolge, Auswahlquote und Reihenfolgeeffekt im Vergleich zwischen {comparison.experiments.map((e) => e.model.name).join(' und ')}.</p>
+        <p class="lede">Rangfolge, Auswahlquote und Reihenfolgeeffekt im Vergleich zwischen {modelNameList}.</p>
         <div class="notice interpretation"><strong>Einordnung des Modellvergleichs</strong>Verglichen werden die beobachteten Ausgaben der dokumentierten Modell-/API-Systeme im jeweiligen Versuchsaufbau. Der Vergleich ist weder ein allgemeiner Qualitätsbenchmark noch ein Nachweis politischer Neutralität.</div>
 
         <h2 class="section-title">Rangfolge im Vergleich</h2>
@@ -60,7 +64,7 @@ const effortRows = getEffortRows(experiments);
               <tr><th scope="row">Erfolgreiche Entscheidungen</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.requests.successful)}</td>)}</tr>
               <tr><th scope="row">Dokumentierter Gesamtzeitraum</th>{effortRows.map(({ experiment }) => <td>{formatMinutes(experiment.usage.timing.documentedSpanMinutes)}</td>)}</tr>
               <tr><th scope="row">Aktive API-Zeit</th>{effortRows.map(({ experiment }) => <td>{formatMinutes(experiment.usage.timing.activeApiMinutes)} <small>({formatPercent(experiment.usage.timing.activeShareOfDocumentedSpan ?? 0, 0)})</small></td>)}</tr>
-              <tr><th scope="row">Requests/Minute</th>{effortRows.map(({ experiment }) => <td>{experiment.usage.timing.successfulDecisionsPerMinute?.toFixed(1) ?? '–'}</td>)}</tr>
+              <tr><th scope="row">Requests/Minute</th>{effortRows.map(({ experiment }) => <td>{experiment.usage.timing.successfulDecisionsPerMinute?.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) ?? '–'}</td>)}</tr>
               <tr><th scope="row">Input-Tokens</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.inputTotal)}</td>)}</tr>
               <tr><th scope="row">davon Cached Input</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.cachedInputTotal)} <small>({formatPercent(experiment.usage.caching.cachedInputShare, 0)})</small></td>)}</tr>
               <tr><th scope="row">Output-Tokens</th>{effortRows.map(({ experiment }) => <td>{formatInteger(experiment.usage.tokens.outputTotal)}</td>)}</tr>

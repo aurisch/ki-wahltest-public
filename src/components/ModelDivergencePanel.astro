@@ -14,7 +14,7 @@ const { divergences } = Astro.props as { divergences: Divergence[] };
       </div>
       <div class="divergence-rows">
         {divergence.entries.map((entry) => (
-          <div class="divergence-row" class:list={{ extreme: entry === divergence.highestEntry || entry === divergence.lowestEntry }}>
+          <div class="divergence-row">
             <span class="model-name">{entry.modelName}</span>
             <span class="bar-track"><i style={`width:${entry.share * 100}%`}></i></span>
             <span class="share">{formatPercent(entry.share)}</span>
@@ -34,11 +34,9 @@ const { divergences } = Astro.props as { divergences: Divergence[] };
   .spread small { display: block; margin-top: .1rem; color: var(--muted); font-weight: 500; font-size: .72rem; text-transform: none; }
   .divergence-rows { display: grid; gap: .4rem; margin-top: .9rem; }
   .divergence-row { display: grid; grid-template-columns: minmax(7rem, 11rem) 1fr 3.6rem; align-items: center; gap: .75rem; font-size: .86rem; }
-  .divergence-row.extreme .model-name, .divergence-row.extreme .share { font-weight: 750; color: var(--ink); }
   .model-name { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bar-track { position: relative; overflow: hidden; height: .55rem; border-radius: 99rem; background: var(--surface-soft); }
   .bar-track i { display: block; height: 100%; border-radius: inherit; background: var(--line-strong); }
-  .divergence-row.extreme .bar-track i { background: var(--teal); }
   .share { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
   @media (max-width: 560px) { .divergence-row { grid-template-columns: 6rem 1fr 3.2rem; } }
 </style>

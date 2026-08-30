@@ -1,6 +1,6 @@
-import source from '../../../public/data/experiments/grok-4.3-main-v1/website-data.json';
-import manifest from '../../../public/data/experiments/grok-4.3-main-v1/manifest.json';
-import usage from '../../../public/data/experiments/grok-4.3-main-v1/usage.json';
+import source from '../../../public/data/experiments/opus-5-main-v1/website-data.json';
+import manifest from '../../../public/data/experiments/opus-5-main-v1/manifest.json';
+import usage from '../../../public/data/experiments/opus-5-main-v1/usage.json';
 import { parties, pairSlug } from '../../lib/parties';
 import type { Experiment, PairResult, PartyName } from '../../lib/types';
 
@@ -51,16 +51,16 @@ function pairFromSource(pair: SourcePair): PairResult {
 const btAbilities = new Map(source.regularizedBradleyTerry.withPosition.map((item) => [item.party, item.ability]));
 
 export const experiment: Experiment = {
-  id: 'grok-4.3-main-v1',
-  title: 'Grok-4.3 – 10-Parteien-Hauptlauf',
+  id: 'opus-5-main-v1',
+  title: 'Claude Opus 5 – 10-Parteien-Hauptlauf',
   description:
     'Ein eingefrorenes Experiment mit 9.000 paarweisen Entscheidungen zwischen zehn deutschen Parteien.',
   status: 'completed',
-  model: { name: 'Grok-4.3', exactModelId: 'grok-4.3' },
+  model: { name: 'Claude Opus 5', exactModelId: 'claude-opus-5' },
   timeline: {
     createdAtUtc: manifest.createdAt,
-    firstRequestUtc: '2026-08-29T20:15:57.320Z',
-    lastSuccessfulRequestUtc: '2026-08-29T21:58:59.226Z',
+    firstRequestUtc: '2026-08-29T19:48:01.162Z',
+    lastSuccessfulRequestUtc: '2026-08-30T17:14:59.443Z',
   },
   prompt: {
     methodId: manifest.methodId,
@@ -109,25 +109,24 @@ export const experiment: Experiment = {
       globalFirstPositionLogOdds: source.regularizedBradleyTerry.globalFirstPositionLogOdds,
       pFirstIfEqual: source.regularizedBradleyTerry.pFirstIfEqual,
     },
-    deterministicBlocks: { perfect: 2, total: 90 },
-    deterministicDuels: { perfect: 0, total: 45 },
+    deterministicBlocks: { perfect: 79, total: 90 },
+    deterministicDuels: { perfect: 35, total: 45 },
   },
   provenance: {
     sourceFiles: ['manifest.json', 'jobs.jsonl', 'results.jsonl', 'website-data.json', 'pairwise-analysis.csv', 'analysis-report.md', 'usage.json'],
     sha256: {
-      'manifest.json': 'fdd1a90e14ee06e7ccc0dd5018fab5819774480f8671f08d8951cb2602a61093',
-      'jobs.jsonl': 'afa700901a59350e56736f1c2a2f694321ea0475420a1e1e73f76e90330960f0',
-      'results.jsonl': '6f9e021bed0151fd13f9299a84226332e5bfeb4d678b40b8e9e392bcdee643d2',
-      'website-data.json': '569073adf1cdde142fa4ba9196532d74618ee8b1254f414e4bfead04f491a069',
-      'pairwise-analysis.csv': '5788bce8c852140f317c27a4cd674c4ca201727f24b938f3abfc1fb8a0e26e37',
-      'analysis-report.md': 'be03c08a398149a220c75fb50d96500a66d8913ec17a54d8b4df8eba802a936f',
-      'usage.json': '1538d7a9530aec693b74f79c2e88ccf0d6076e274316f379d42315723ff4c5e2',
+      'manifest.json': 'bbc91564c45287078c8fd50f8deb6da40eac543a8a34883be6b8c7f7d0f632f4',
+      'jobs.jsonl': 'a6562949b3828e2a4454918b3ab7e9791e7ba286949ed41c876ef29c22c83293',
+      'results.jsonl': 'c49416d093a20f66c13e958c13af216aa093d3118546c5e50c774e672c4d9213',
+      'website-data.json': '5d7a69e2d07977bb6088774fe6c7d7e3f590c1e64b17376e7745358e98ea6172',
+      'pairwise-analysis.csv': 'b1caeb9b92820b5322efc633f0964df8c68620f2de2d266060741f48b2be4c38',
+      'analysis-report.md': 'c92db11770c60e636e9c23073c8e018321d54bbf8371d84fe0f2ed1a6ece3b69',
+      'usage.json': 'b0b2fa6e0950046e51cd3f0f8247dc3eff70f087fed95c5d429c6ec4775bb31a',
     },
-    publicBasePath: '/data/experiments/grok-4.3-main-v1',
-    derivedBasePath: '/data/experiments/grok-4.3-main-v1',
+    publicBasePath: '/data/experiments/opus-5-main-v1',
+    derivedBasePath: '/data/experiments/opus-5-main-v1',
   },
   notes: [
     'Die Zeitangaben beschreiben den dokumentierten Experiment- und Request-Zeitraum, nicht zwingend die gesamte Programmlaufzeit.',
-    'Das Manifest fordert das Modell "grok-4" an; die tatsächlich antwortende Modellversion (Feld responseModel in results.jsonl) war durchgängig "grok-4.3".',
   ],
 };

@@ -24,12 +24,13 @@ const { usage } = experiment;
 
   <h3>Laufzeit</h3>
   <p><strong>Dokumentierter Gesamtzeitraum</strong> und <strong>aktive API-Zeit</strong> sind unterschiedliche Größen und werden deshalb getrennt ausgewiesen: {usage.timing.documentedSpanBasis} {usage.timing.activeApiBasis}</p>
+  <p>Das Manifest dieses Laufs dokumentiert die konfigurierte Ausführung separat. Die nachfolgende Parallelitätsangabe beschreibt ausschließlich Überlappungen der aus <code>timestamp</code> und <code>durationMs</code> rekonstruierten Requestintervalle. Solche Überlappungen können insbesondere im Umfeld langer Fehlversuche, Retries oder Restarts auftreten und werden nicht als Nachweis einer regulär parallel konfigurierten Runner-Ausführung interpretiert.</p>
   <dl class="meta-list">
     <dt>Dokumentierter Gesamtzeitraum</dt><dd>{formatMinutes(usage.timing.documentedSpanMinutes)} ({new Date(usage.timing.firstAttemptUtc).toISOString()} – {new Date(usage.timing.lastAttemptUtc).toISOString()})</dd>
     <dt>Aktive API-Zeit</dt><dd>{formatMinutes(usage.timing.activeApiMinutes)} ({formatPercent(usage.timing.activeShareOfDocumentedSpan ?? 0)} des Gesamtzeitraums)</dd>
     <dt>Nicht durch Requests belegte Zeit</dt><dd>{formatMinutes(usage.timing.nonRequestSpanMinutes)}</dd>
-    <dt>Ø erfolgreiche Entscheidungen/Minute</dt><dd>{usage.timing.successfulDecisionsPerMinute?.toFixed(2) ?? '–'}</dd>
-    <dt>Maximale Parallelität</dt><dd>{formatInteger(usage.timing.parallelism.maxConcurrentAttempts)} gleichzeitig rekonstruierte Requests ({usage.timing.parallelism.isStrictlySerial ? 'streng seriell' : 'nicht streng seriell'})</dd>
+    <dt>Ø erfolgreiche Entscheidungen/Minute</dt><dd>{usage.timing.successfulDecisionsPerMinute?.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '–'}</dd>
+    <dt>Maximal überlappende rekonstruierte Intervalle</dt><dd>{formatInteger(usage.timing.parallelism.maxConcurrentAttempts)} ({usage.timing.parallelism.isStrictlySerial ? 'keine Überlappung rekonstruiert' : 'Überlappungen rekonstruiert'})</dd>
     {usage.timing.successfulDurationStats && (<>
       <dt>durationMs, erfolgreich – Median</dt><dd>{formatInteger(usage.timing.successfulDurationStats.median)} ms</dd>
       <dt>durationMs, erfolgreich – Mittelwert</dt><dd>{formatInteger(Math.round(usage.timing.successfulDurationStats.mean))} ms</dd>
@@ -41,7 +42,7 @@ const { usage } = experiment;
       <dt>durationMs, fehlgeschlagene Attempts – Min/Max</dt><dd>{formatInteger(usage.timing.failedDurationStats.min)} ms / {formatInteger(usage.timing.failedDurationStats.max)} ms</dd>
     </>)}
   </dl>
-  <p class="notice">Keine Aussage wie „dieses Modell ist schneller" ohne Vorbehalt: Laufzeit kann API-Auslastung, Rate-Limits, Retry-Verhalten und Infrastruktur des jeweiligen Anbieters widerspiegeln, nicht nur das Modell selbst.</p>
+  <p class="notice">Keine Aussage wie „dieses Modell ist schneller" ohne Vorbehalt: Laufzeit kann API-Auslastung, Rate-Limits, Retry-Verhalten, Restarts und Infrastruktur des jeweiligen Anbieters widerspiegeln, nicht nur das Modell selbst.</p>
 
   {usage.timing.gaps.count > 0 && (
     <>
@@ -74,7 +75,7 @@ const { usage } = experiment;
     <dt>Output-Tokens gesamt</dt><dd>{formatInteger(usage.tokens.outputTotal)}</dd>
     <dt>davon Reasoning-Tokens</dt><dd>{formatInteger(usage.tokens.reasoningTotal)}</dd>
     <dt>Tokens gesamt</dt><dd>{formatInteger(usage.tokens.totalTokens)}</dd>
-    <dt>Ø Tokens je erfolgreicher Entscheidung</dt><dd>{usage.tokens.averagePerSuccessfulDecision.total.toFixed(1)}</dd>
+    <dt>Ø Tokens je erfolgreicher Entscheidung</dt><dd>{usage.tokens.averagePerSuccessfulDecision.total.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</dd>
     <dt>Tokenverbrauch fehlgeschlagener Attempts</dt><dd>{formatInteger(usage.tokens.failedAttemptsTokenTotal)}</dd>
   </dl>
 
@@ -84,14 +85,14 @@ const { usage } = experiment;
       <dt>Requests mit Cache-Hit</dt><dd>{formatInteger(usage.caching.requestsWithCacheHit)} ({formatPercent(usage.caching.cacheHitShare)})</dd>
       <dt>Gecachte Input-Tokens gesamt</dt><dd>{formatInteger(usage.caching.cachedTokensTotal)}</dd>
       <dt>Anteil gecachter Input-Tokens</dt><dd>{formatPercent(usage.caching.cachedInputShare)}</dd>
-      <dt>Ø gecachte Tokens je Hit-Request</dt><dd>{usage.caching.averageCachedTokensPerHitRequest.toFixed(1)}</dd>
+      <dt>Ø gecachte Tokens je Hit-Request</dt><dd>{usage.caching.averageCachedTokensPerHitRequest.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</dd>
     </dl>
   ) : (
     <p>Keine bzw. praktisch keine gecachten Input-Tokens in diesem Lauf (0 Requests mit Cache-Hit). Das wird hier transparent ausgewiesen, ohne daraus eine Wertung abzuleiten.</p>
   )}
 
   <h3>Kosten</h3>
-  <p>Preisgrundlage (Pricing-Snapshot, zum Experimentzeitpunkt gültig und dauerhaft eingefroren – spätere Preisänderungen des Anbieters wirken sich nicht rückwirkend aus): <strong>${usage.cost.pricingSnapshot.inputPerMillionUsd.toFixed(2)}</strong>/Mio. Input, <strong>${usage.cost.pricingSnapshot.cachedInputPerMillionUsd.toFixed(2)}</strong>/Mio. Cached Input, <strong>${usage.cost.pricingSnapshot.outputPerMillionUsd.toFixed(2)}</strong>/Mio. Output, gültig ab {usage.cost.pricingSnapshot.effectiveFrom.slice(0, 10)}. Quelle: {usage.cost.pricingSnapshot.source}</p>
+  <p>Preisgrundlage: ein für diesen Lauf eingefrorener Pricing-Snapshot mit <strong>{formatUsd(usage.cost.pricingSnapshot.inputPerMillionUsd)}</strong>/Mio. Input, <strong>{formatUsd(usage.cost.pricingSnapshot.cachedInputPerMillionUsd)}</strong>/Mio. Cached Input und <strong>{formatUsd(usage.cost.pricingSnapshot.outputPerMillionUsd)}</strong>/Mio. Output. Der intern gespeicherte Stichtag <code>{usage.cost.pricingSnapshot.effectiveFrom.slice(0, 10)}</code> dient der technischen Auswahl des für den Experimentzeitpunkt hinterlegten Snapshots; er ist nicht als Veröffentlichungsdatum des Modells oder als historisch belegter Beginn dieses Preises zu verstehen. Quelle: {usage.cost.pricingSnapshot.source}</p>
   <dl class="meta-list">
     <dt>Gesamtkosten</dt><dd>{formatUsd(usage.cost.totalUsd, 4)}</dd>
     <dt>Protokollierte Providerkosten</dt><dd>{usage.cost.providerReportedUsd === null ? 'vom Anbieter nicht pro Response geliefert' : formatUsd(usage.cost.providerReportedUsd, 4)}</dd>

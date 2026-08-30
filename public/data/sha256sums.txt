@@ -12,3 +12,10 @@ afa700901a59350e56736f1c2a2f694321ea0475420a1e1e73f76e90330960f0  experiments/gr
 5788bce8c852140f317c27a4cd674c4ca201727f24b938f3abfc1fb8a0e26e37  experiments/grok-4.3-main-v1/pairwise-analysis.csv
 be03c08a398149a220c75fb50d96500a66d8913ec17a54d8b4df8eba802a936f  experiments/grok-4.3-main-v1/analysis-report.md
 1538d7a9530aec693b74f79c2e88ccf0d6076e274316f379d42315723ff4c5e2  experiments/grok-4.3-main-v1/usage.json
+bbc91564c45287078c8fd50f8deb6da40eac543a8a34883be6b8c7f7d0f632f4  experiments/opus-5-main-v1/manifest.json
+a6562949b3828e2a4454918b3ab7e9791e7ba286949ed41c876ef29c22c83293  experiments/opus-5-main-v1/jobs.jsonl
+c49416d093a20f66c13e958c13af216aa093d3118546c5e50c774e672c4d9213  experiments/opus-5-main-v1/results.jsonl
+5d7a69e2d07977bb6088774fe6c7d7e3f590c1e64b17376e7745358e98ea6172  experiments/opus-5-main-v1/website-data.json
+b1caeb9b92820b5322efc633f0964df8c68620f2de2d266060741f48b2be4c38  experiments/opus-5-main-v1/pairwise-analysis.csv
+c92db11770c60e636e9c23073c8e018321d54bbf8371d84fe0f2ed1a6ece3b69  experiments/opus-5-main-v1/analysis-report.md
+b0b2fa6e0950046e51cd3f0f8247dc3eff70f087fed95c5d429c6ec4775bb31a  experiments/opus-5-main-v1/usage.json

@@ -2,7 +2,10 @@
 import { shortPartyName } from '../lib/parties';
 import type { OrderResult, PairResult, PartyName } from '../lib/types';
 const { stable, sensitive } = Astro.props as { stable: PairResult; sensitive: PairResult };
-const stableWinner = stable.majority;
+// Das stabile Beispiel ist das Paar mit dem kleinsten Reihenfolgeeffekt.
+// Sollte es je ein exaktes Unentschieden sein (majority null), wird die
+// erste Partei gezeigt — alle Aussagen unten bleiben dann zahlenbasiert korrekt.
+const stableWinner = stable.majority ?? stable.parties[0];
 const stableLoser = stable.parties.find((party) => party !== stableWinner)!;
 const selectedFor = (order: OrderResult, party: PartyName) => order.first === party ? order.firstSelected : order.secondSelected;
 const [sensitiveA, sensitiveB] = sensitive.parties;

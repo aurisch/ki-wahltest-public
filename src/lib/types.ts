@@ -33,7 +33,8 @@ export type PairResult = {
   totals: Record<PartyName, number>;
   orders: [OrderResult, OrderResult];
   sensitivityPercentagePoints: number;
-  majority: PartyName;
+  /** null bei einem exakten Unentschieden (z.B. 100:100) — dann gibt es keine Duellmehrheit. */
+  majority: PartyName | null;
   majorityFlipsWithOrder: boolean;
 };
 

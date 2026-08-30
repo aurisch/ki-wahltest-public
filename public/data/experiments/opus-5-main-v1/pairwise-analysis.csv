@@ -1,0 +1,46 @@
+party1,party2,party1_wins,party2_wins,p1_when_first,p1_when_second,D_pp,majority
+Die Linke,Freie Wähler,100,100,0,1,100,
+Bündnis 90/Die Grünen,Volt,93,107,0.93,0,93,Volt
+CDU/CSU,Freie Wähler,100,100,0.05,0.95,89.99999999999999,
+CDU/CSU,Die Linke,144,56,0.44,1,56.00000000000001,CDU/CSU
+CDU/CSU,Bündnis 90/Die Grünen,104,96,0.76,0.28,48,CDU/CSU
+CDU/CSU,SPD,33,167,0,0.33,33,SPD
+SPD,ÖDP,6,194,0.06,0,6,ÖDP
+SPD,Bündnis 90/Die Grünen,3,197,0,0.03,3,Bündnis 90/Die Grünen
+Bündnis 90/Die Grünen,ÖDP,199,1,0.99,1,1.0000000000000009,Bündnis 90/Die Grünen
+Die Linke,ÖDP,1,199,0,0.01,1,ÖDP
+BSW,ÖDP,0,200,0,0,0,ÖDP
+FDP,Freie Wähler,0,200,0,0,0,Freie Wähler
+CDU/CSU,AfD,200,0,1,1,0,CDU/CSU
+CDU/CSU,Volt,0,200,0,0,0,Volt
+Freie Wähler,Volt,0,200,0,0,0,Volt
+SPD,FDP,200,0,1,1,0,SPD
+SPD,Freie Wähler,200,0,1,1,0,SPD
+AfD,Die Linke,0,200,0,0,0,Die Linke
+CDU/CSU,BSW,200,0,1,1,0,CDU/CSU
+Die Linke,FDP,200,0,1,1,0,Die Linke
+Die Linke,BSW,200,0,1,1,0,Die Linke
+CDU/CSU,FDP,200,0,1,1,0,CDU/CSU
+Bündnis 90/Die Grünen,FDP,200,0,1,1,0,Bündnis 90/Die Grünen
+FDP,BSW,200,0,1,1,0,FDP
+Freie Wähler,ÖDP,0,200,0,0,0,ÖDP
+FDP,Volt,0,200,0,0,0,Volt
+CDU/CSU,ÖDP,0,200,0,0,0,ÖDP
+SPD,BSW,200,0,1,1,0,SPD
+Bündnis 90/Die Grünen,BSW,200,0,1,1,0,Bündnis 90/Die Grünen
+SPD,Die Linke,200,0,1,1,0,SPD
+AfD,FDP,0,200,0,0,0,FDP
+AfD,BSW,0,200,0,0,0,BSW
+FDP,ÖDP,0,200,0,0,0,ÖDP
+Bündnis 90/Die Grünen,AfD,200,0,1,1,0,Bündnis 90/Die Grünen
+Bündnis 90/Die Grünen,Freie Wähler,200,0,1,1,0,Bündnis 90/Die Grünen
+Die Linke,Volt,0,200,0,0,0,Volt
+AfD,Volt,0,200,0,0,0,Volt
+AfD,ÖDP,0,200,0,0,0,ÖDP
+SPD,AfD,200,0,1,1,0,SPD
+AfD,Freie Wähler,0,200,0,0,0,Freie Wähler
+BSW,Freie Wähler,0,200,0,0,0,Freie Wähler
+Bündnis 90/Die Grünen,Die Linke,200,0,1,1,0,Bündnis 90/Die Grünen
+Volt,ÖDP,200,0,1,1,0,Volt
+SPD,Volt,0,200,0,0,0,Volt
+BSW,Volt,0,200,0,0,0,Volt

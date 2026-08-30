@@ -11,7 +11,21 @@ const shareFor = (order: typeof firstOrder) => selectedFor(order) / order.runs *
 const firstShare = shareFor(firstOrder);
 const secondShare = shareFor(secondOrder);
 const formatShare = (share: number) => share.toLocaleString('de-DE', { maximumFractionDigits: 1 });
-const selectionLabel = shortPartyName(trackedParty) === 'Grüne' ? 'Auswahl der Grünen' : `Auswahl von ${shortPartyName(trackedParty)}`;
+// Grammatisch korrekte Beschriftung je Partei (Record über alle PartyNames,
+// damit der Compiler eine fehlende Partei sofort meldet).
+const selectionLabels: Record<import('../lib/types').PartyName, string> = {
+  'CDU/CSU': 'Auswahl von CDU/CSU',
+  SPD: 'Auswahl der SPD',
+  'Bündnis 90/Die Grünen': 'Auswahl der Grünen',
+  AfD: 'Auswahl der AfD',
+  'Die Linke': 'Auswahl der Linken',
+  FDP: 'Auswahl der FDP',
+  BSW: 'Auswahl des BSW',
+  'Freie Wähler': 'Auswahl der Freien Wähler',
+  Volt: 'Auswahl von Volt',
+  'ÖDP': 'Auswahl der ÖDP',
+};
+const selectionLabel = selectionLabels[trackedParty];
 ---
 <div class="reveal">
   <article class="reveal-step">

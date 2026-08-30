@@ -26,7 +26,8 @@ function methodologyDiffers(experiments: Experiment[]): boolean {
   const revisions = new Set(experiments.map((experiment) => experiment.prompt.revision));
   const reasoningEfforts = new Set(experiments.map((experiment) => experiment.parameters.reasoningEffort ?? null));
   const temperatures = new Set(experiments.map((experiment) => experiment.parameters.temperature ?? null));
-  return revisions.size > 1 || reasoningEfforts.size > 1 || temperatures.size > 1;
+  const maxOutputTokens = new Set(experiments.map((experiment) => experiment.parameters.maxOutputTokens ?? null));
+  return revisions.size > 1 || reasoningEfforts.size > 1 || temperatures.size > 1 || maxOutputTokens.size > 1;
 }
 
 export function buildComparison(allExperiments: Experiment[]): Comparison {

@@ -2,11 +2,18 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const experimentIds = ['gpt-5.6-sol-main-v2', 'grok-4.3-main-v1'];
+const experimentIds = ['gpt-5.6-sol-main-v2', 'grok-4.3-main-v1', 'opus-5-main-v1'];
 const tolerance = 1e-9;
 
 function fail(message) {
   throw new Error(`DERIVED SEMANTICS AUDIT: ${message}`);
+}
+
+function getCachedInputTokensForAudit(usage) {
+  if (!usage) return 0;
+  if (typeof usage.input_tokens_details?.cached_tokens === 'number') return usage.input_tokens_details.cached_tokens;
+  if (typeof usage.cache_read_input_tokens === 'number') return usage.cache_read_input_tokens;
+  return 0;
 }
 
 function close(a, b) {
@@ -27,7 +34,7 @@ for (const id of experimentIds) {
   const attempts = readJsonl(join(dir, 'results.jsonl'));
 
   const allCachedInput = attempts.reduce(
-    (sum, attempt) => sum + (attempt.usage?.input_tokens_details?.cached_tokens ?? 0),
+    (sum, attempt) => sum + getCachedInputTokensForAudit(attempt.usage),
     0,
   );
   const pricing = usage.cost.pricingSnapshot;
@@ -45,7 +52,7 @@ for (const id of experimentIds) {
   }
 
   const successful = attempts.filter((attempt) => attempt.error === null && typeof attempt.chosenParty === 'string');
-  const successfulCacheHits = successful.filter((attempt) => (attempt.usage?.input_tokens_details?.cached_tokens ?? 0) > 0).length;
+  const successfulCacheHits = successful.filter((attempt) => getCachedInputTokensForAudit(attempt.usage) > 0).length;
   if (usage.caching.requestsWithCacheHit !== successfulCacheHits) {
     fail(`${id}: Cache-Hit-Anzahl ${usage.caching.requestsWithCacheHit}, erwartet ${successfulCacheHits}.`);
   }

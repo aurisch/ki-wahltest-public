@@ -65,6 +65,33 @@ const experimentAudits = [
     expectedManifest: { model: 'grok-4', reasoningEffort: 'none', temperature: 1, maxOutputTokens: 64, seed: 20260902, runsPerOrder: 100, totalRequests: 9000 },
     expectedTimestamps: { first: '2026-08-29T20:15:57.320Z', last: '2026-08-29T21:58:59.226Z' },
   },
+  {
+    id: 'opus-5-main-v1',
+    sourceFile: 'src/data/experiments/opus5-main-v1.ts',
+    expectedRanking: new Map([
+      ['Volt', 1707],
+      ['Bündnis 90/Die Grünen', 1585],
+      ['ÖDP', 1394],
+      ['SPD', 1176],
+      ['CDU/CSU', 981],
+      ['Freie Wähler', 800],
+      ['Die Linke', 757],
+      ['FDP', 400],
+      ['BSW', 200],
+      ['AfD', 0],
+    ]),
+    expectedLargestEffects: new Map([
+      ['Die Linke\0Freie Wähler', 100],
+      ['Bündnis 90/Die Grünen\0Volt', 93],
+      ['CDU/CSU\0Freie Wähler', 90],
+      ['CDU/CSU\0Die Linke', 56],
+      ['CDU/CSU\0Bündnis 90/Die Grünen', 48],
+    ]),
+    expectedPositions: { first: 4363, second: 4637 },
+    expectedDeterministic: { perfectBlocks: 79, perfectDuels: 35 },
+    expectedManifest: { model: 'claude-opus-5', reasoningEffort: 'low', temperature: 1, maxOutputTokens: 1024, seed: 20260902, runsPerOrder: 100, totalRequests: 9000 },
+    expectedTimestamps: { first: '2026-08-29T19:48:01.162Z', last: '2026-08-30T17:14:59.443Z' },
+  },
 ];
 
 // Jedes Experiment bringt seine eigenen primären und abgeleiteten Dateien
@@ -192,6 +219,15 @@ function mergedActiveMsForAudit(intervals) {
   }
   total += blockEnd - blockStart;
   return total;
+}
+
+// Providerübergreifende Extraktion wie in derive-experiment-data.mjs, hier
+// unabhängig reimplementiert.
+function getCachedInputTokensForAudit(usage) {
+  if (!usage) return 0;
+  if (typeof usage.input_tokens_details?.cached_tokens === 'number') return usage.input_tokens_details.cached_tokens;
+  if (typeof usage.cache_read_input_tokens === 'number') return usage.cache_read_input_tokens;
+  return 0;
 }
 
 function checkImmutableHashes() {
@@ -385,7 +421,8 @@ function auditExperiment(audit) {
     const party2Total = pair.selections.get(party2);
     assert(party1Total + party2Total === 200, `${audit.id}: ${key} hat eine Paarsumme ungleich 200.`);
     if (Math.max(party1Total, party2Total) === 200) perfectDuels += 1;
-    const majority = party1Total > party2Total ? party1 : party2;
+    // Ein exaktes Unentschieden (100:100) hat keine Duellmehrheit (null).
+    const majority = party1Total > party2Total ? party1 : party2Total > party1Total ? party2 : null;
     const winnerAB = ab.firstSelected > ab.secondSelected ? ab.firstParty : ab.secondParty;
     const winnerBA = ba.firstSelected > ba.secondSelected ? ba.firstParty : ba.secondParty;
     const flips = winnerAB !== winnerBA;
@@ -405,7 +442,11 @@ function auditExperiment(audit) {
   assert(pairResults.size === 45, `${audit.id}: ${pairResults.size} statt 45 rekonstruierte Paare.`);
   for (const [key, expected] of audit.expectedLargestEffects) assert(close(effects.get(key), expected), `${audit.id}: erwarteter Reihenfolgeeffekt ${expected} PP für ${key} fehlt.`);
   const sortedEffects = [...effects.values()].sort((a, b) => b - a).slice(0, 5);
-  assert(JSON.stringify(sortedEffects) === JSON.stringify([...audit.expectedLargestEffects.values()]), `${audit.id}: Die fünf größten Reihenfolgeeffekte stimmen nicht.`);
+  const expectedSortedEffects = [...audit.expectedLargestEffects.values()];
+  assert(
+    sortedEffects.length === expectedSortedEffects.length && sortedEffects.every((value, index) => close(value, expectedSortedEffects[index])),
+    `${audit.id}: Die fünf größten Reihenfolgeeffekte stimmen nicht.`,
+  );
 
   assert(firstSelected + secondSelected === totalRequests, `${audit.id}: Positionssummen ergeben nicht ${totalRequests}.`);
   assert(secondSelected === audit.expectedPositions.second && firstSelected === audit.expectedPositions.first, `${audit.id}: Positionsstatistik unerwartet: zuerst ${firstSelected}, zweitens ${secondSelected}.`);
@@ -464,7 +505,7 @@ function auditUsageStats(audit, usage, attempts, successesBySequence, manifest) 
   for (const attempt of successfulAttempts) {
     const u = attempt.usage ?? {};
     inputTotal += u.input_tokens ?? 0;
-    cachedInputTotal += u.input_tokens_details?.cached_tokens ?? 0;
+    cachedInputTotal += getCachedInputTokensForAudit(u);
     outputTotal += u.output_tokens ?? 0;
   }
   assert(usage.tokens.inputTotal === inputTotal, `${audit.id}: usage.json-Input-Tokens stimmen nicht mit den Rohdaten überein.`);

@@ -1,0 +1,258 @@
+{
+  "requests": {
+    "successful": 9000,
+    "totalAttempts": 9360,
+    "failed": 360,
+    "retries": 360,
+    "successRate": 0.9615384615384616
+  },
+  "timing": {
+    "firstAttemptUtc": "2026-08-29T19:48:01.162Z",
+    "lastAttemptUtc": "2026-08-30T17:14:59.443Z",
+    "firstSuccessfulRequestUtc": "2026-08-29T19:48:01.162Z",
+    "lastSuccessfulRequestUtc": "2026-08-30T17:14:59.443Z",
+    "documentedSpanMs": 77218281,
+    "documentedSpanMinutes": 1286.97135,
+    "documentedSpanBasis": "Erster bis letzter protokollierter Attempt (Erfolge und Fehlversuche); reine Kalenderzeit, keine Aussage über tatsächliche Request-Aktivität.",
+    "successfulDecisionsPerMinute": 6.993162668306486,
+    "successfulRequestDurationSumMs": 32295172,
+    "failedRequestDurationSumMs": 44288246,
+    "allRequestDurationSumMs": 76583418,
+    "activeApiMs": 54596416,
+    "activeApiMinutes": 909.9402666666666,
+    "activeApiBasis": "Vereinigung der rekonstruierten Request-Intervalle (Start = Timestamp − durationMs) über alle Attempts; vermeidet Doppelzählung bei nebenläufiger Ausführung.",
+    "nonRequestSpanMs": 22621865,
+    "nonRequestSpanMinutes": 377.03108333333336,
+    "activeShareOfDocumentedSpan": 0.7070400336935757,
+    "successfulDurationStats": {
+      "count": 9000,
+      "sumMs": 32295172,
+      "mean": 3588.3524444444442,
+      "median": 3226,
+      "p95": 4316,
+      "min": 923,
+      "max": 1662610
+    },
+    "failedDurationStats": {
+      "count": 360,
+      "sumMs": 44288246,
+      "mean": 123022.90555555555,
+      "median": 3119.5,
+      "p95": 601060.4500000002,
+      "min": 410,
+      "max": 5389309
+    },
+    "allDurationStats": {
+      "count": 9360,
+      "sumMs": 76583418,
+      "mean": 8181.989102564103,
+      "median": 3222,
+      "p95": 4333.149999999998,
+      "min": 410,
+      "max": 5389309
+    },
+    "parallelism": {
+      "maxConcurrentAttempts": 5,
+      "maxConcurrentSuccessfulAttempts": 4,
+      "isStrictlySerial": false
+    },
+    "gaps": {
+      "basis": "Lücken zwischen der Vereinigung der rekonstruierten Request-Intervalle: Zeitspannen ohne jeden aktiven Request.",
+      "count": 3196,
+      "sumMs": 22624106,
+      "sumMinutes": 377.06843333333336,
+      "median": 563.5,
+      "p95": 1927.5,
+      "max": 4833998,
+      "countOverThreshold": {
+        "over1s": 834,
+        "over5s": 35,
+        "over30s": 14,
+        "over1min": 12,
+        "over5min": 11,
+        "over10min": 6
+      },
+      "largest": [
+        {
+          "startUtc": "2026-08-30T12:15:06.411Z",
+          "endUtc": "2026-08-30T13:35:40.409Z",
+          "durationMs": 4833998,
+          "durationMinutes": 80.56663333333333,
+          "before": {
+            "sequence": 7386,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 7397,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-30T08:52:42.272Z",
+          "endUtc": "2026-08-30T10:12:21.931Z",
+          "durationMs": 4779659,
+          "durationMinutes": 79.66098333333333,
+          "before": {
+            "sequence": 5900,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 5900,
+            "attempt": 2
+          }
+        },
+        {
+          "startUtc": "2026-08-30T06:41:29.360Z",
+          "endUtc": "2026-08-30T07:20:59.723Z",
+          "durationMs": 2370363,
+          "durationMinutes": 39.50605,
+          "before": {
+            "sequence": 5287,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 5287,
+            "attempt": 2
+          }
+        },
+        {
+          "startUtc": "2026-08-30T05:22:49.709Z",
+          "endUtc": "2026-08-30T06:01:57.817Z",
+          "durationMs": 2348108,
+          "durationMinutes": 39.135133333333336,
+          "before": {
+            "sequence": 5257,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 5287,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-30T01:12:04.441Z",
+          "endUtc": "2026-08-30T01:50:37.078Z",
+          "durationMs": 2312637,
+          "durationMinutes": 38.54395,
+          "before": {
+            "sequence": 5154,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 5167,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-30T14:46:45.434Z",
+          "endUtc": "2026-08-30T15:04:32.794Z",
+          "durationMs": 1067360,
+          "durationMinutes": 17.78933333333333,
+          "before": {
+            "sequence": 7430,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 7457,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-30T03:19:42.174Z",
+          "endUtc": "2026-08-30T03:28:14.389Z",
+          "durationMs": 512215,
+          "durationMinutes": 8.536916666666666,
+          "before": {
+            "sequence": 5195,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 5225,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-30T15:12:58.333Z",
+          "endUtc": "2026-08-30T15:21:22.767Z",
+          "durationMs": 504434,
+          "durationMinutes": 8.407233333333334,
+          "before": {
+            "sequence": 7457,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 7458,
+            "attempt": 2
+          }
+        },
+        {
+          "startUtc": "2026-08-30T10:34:08.588Z",
+          "endUtc": "2026-08-30T10:41:48.285Z",
+          "durationMs": 459697,
+          "durationMinutes": 7.661616666666666,
+          "before": {
+            "sequence": 6301,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 6316,
+            "attempt": 1
+          }
+        },
+        {
+          "startUtc": "2026-08-30T14:18:14.848Z",
+          "endUtc": "2026-08-30T14:25:34.472Z",
+          "durationMs": 439624,
+          "durationMinutes": 7.327066666666667,
+          "before": {
+            "sequence": 7417,
+            "attempt": 1
+          },
+          "after": {
+            "sequence": 7430,
+            "attempt": 1
+          }
+        }
+      ]
+    }
+  },
+  "tokens": {
+    "inputTotal": 3488400,
+    "cachedInputTotal": 0,
+    "uncachedInputTotal": 3488400,
+    "outputTotal": 74027,
+    "reasoningTotal": 166,
+    "totalTokens": 3562427,
+    "averagePerSuccessfulDecision": {
+      "input": 387.6,
+      "cachedInput": 0,
+      "output": 8.225222222222222,
+      "total": 395.82522222222224
+    },
+    "failedAttemptsTokenTotal": 168521
+  },
+  "caching": {
+    "requestsWithCacheHit": 0,
+    "cacheHitShare": 0,
+    "cachedTokensTotal": 0,
+    "cachedInputShare": 0,
+    "averageCachedTokensPerHitRequest": 0
+  },
+  "cost": {
+    "pricingSnapshot": {
+      "provider": "anthropic",
+      "model": "claude-opus-5",
+      "inputPerMillionUsd": 5,
+      "cachedInputPerMillionUsd": 0.5,
+      "outputPerMillionUsd": 25,
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "source": "Anthropic model documentation: platform.claude.com/docs/en/about-claude/pricing (Claude Opus 5 base input/output/cache-hit pricing). The recorded run has 0 cache-write and 0 cache-read tokens throughout, so the 5-minute (1.25x) / 1-hour (2x) cache-write multipliers were never exercised and are not modeled here."
+    },
+    "totalUsd": 20.96138,
+    "providerReportedUsd": null,
+    "tokenBasedUsd": 20.96138,
+    "perThousandDecisionsUsd": 2.329042222222222,
+    "perDecisionUsd": 0.002329042222222222,
+    "hypotheticalWithoutCachingUsd": null
+  }
+}

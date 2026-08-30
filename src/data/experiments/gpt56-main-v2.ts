@@ -41,7 +41,7 @@ function pairFromSource(pair: SourcePair): PairResult {
     totals: { [party1]: pair.party1_wins, [party2]: pair.party2_wins } as Record<PartyName, number>,
     orders: [firstOrder, secondOrder],
     sensitivityPercentagePoints: Math.round(pair.D_pp * 10) / 10,
-    majority: toParty(pair.majority),
+    majority: (pair.majority as string | null) === null ? null : toParty(pair.majority as string),
     majorityFlipsWithOrder:
       (firstOrder.firstSelected > firstOrder.secondSelected ? firstOrder.first : firstOrder.second) !==
       (secondOrder.firstSelected > secondOrder.secondSelected ? secondOrder.first : secondOrder.second),

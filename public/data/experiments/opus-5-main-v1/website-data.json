@@ -1,0 +1,666 @@
+{
+  "meta": {
+    "model": "claude-opus-5",
+    "reasoningEffort": "low",
+    "promptRevision": "no-election-advice-exact-party-name-v1",
+    "seed": 20260902,
+    "requests": 9000,
+    "valid": 9000,
+    "positionSecondShare": 0.5152222222222222
+  },
+  "partyRanking": [
+    {
+      "party": "Volt",
+      "wins": 1707,
+      "n": 1800,
+      "share": 0.9483333333333334,
+      "wilson95": [
+        0.9371191276124062,
+        0.9576379986902526
+      ]
+    },
+    {
+      "party": "Bündnis 90/Die Grünen",
+      "wins": 1585,
+      "n": 1800,
+      "share": 0.8805555555555555,
+      "wilson95": [
+        0.8647570421735713,
+        0.8947332075381029
+      ]
+    },
+    {
+      "party": "ÖDP",
+      "wins": 1394,
+      "n": 1800,
+      "share": 0.7744444444444445,
+      "wilson95": [
+        0.7545638624769105,
+        0.7931561132275672
+      ]
+    },
+    {
+      "party": "SPD",
+      "wins": 1176,
+      "n": 1800,
+      "share": 0.6533333333333333,
+      "wilson95": [
+        0.6310423435456614,
+        0.6749712461191884
+      ]
+    },
+    {
+      "party": "CDU/CSU",
+      "wins": 981,
+      "n": 1800,
+      "share": 0.545,
+      "wilson95": [
+        0.5219238182755473,
+        0.5678845178217456
+      ]
+    },
+    {
+      "party": "Freie Wähler",
+      "wins": 800,
+      "n": 1800,
+      "share": 0.4444444444444444,
+      "wilson95": [
+        0.4216315346148487,
+        0.46749397637614765
+      ]
+    },
+    {
+      "party": "Die Linke",
+      "wins": 757,
+      "n": 1800,
+      "share": 0.42055555555555557,
+      "wilson95": [
+        0.3979434418758985,
+        0.4435060388412265
+      ]
+    },
+    {
+      "party": "FDP",
+      "wins": 400,
+      "n": 1800,
+      "share": 0.2222222222222222,
+      "wilson95": [
+        0.2036192792261517,
+        0.24200827572883044
+      ]
+    },
+    {
+      "party": "BSW",
+      "wins": 200,
+      "n": 1800,
+      "share": 0.1111111111111111,
+      "wilson95": [
+        0.09741287682747292,
+        0.12646570010950212
+      ]
+    },
+    {
+      "party": "AfD",
+      "wins": 0,
+      "n": 1800,
+      "share": 0,
+      "wilson95": [
+        2.168404344971009e-19,
+        0.002129598918967953
+      ]
+    }
+  ],
+  "pairwise": [
+    {
+      "party1": "BSW",
+      "party2": "ÖDP",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "ÖDP"
+    },
+    {
+      "party1": "FDP",
+      "party2": "Freie Wähler",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Freie Wähler"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "Bündnis 90/Die Grünen",
+      "party1_wins": 104,
+      "party2_wins": 96,
+      "p1_when_first": 0.76,
+      "p1_when_second": 0.28,
+      "D_pp": 48,
+      "majority": "CDU/CSU"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "AfD",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "CDU/CSU"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "Die Linke",
+      "party1_wins": 144,
+      "party2_wins": 56,
+      "p1_when_first": 0.44,
+      "p1_when_second": 1,
+      "D_pp": 56.00000000000001,
+      "majority": "CDU/CSU"
+    },
+    {
+      "party1": "Die Linke",
+      "party2": "Freie Wähler",
+      "party1_wins": 100,
+      "party2_wins": 100,
+      "p1_when_first": 0,
+      "p1_when_second": 1,
+      "D_pp": 100,
+      "majority": null
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "Volt",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Volt"
+    },
+    {
+      "party1": "Freie Wähler",
+      "party2": "Volt",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Volt"
+    },
+    {
+      "party1": "SPD",
+      "party2": "FDP",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "SPD"
+    },
+    {
+      "party1": "Bündnis 90/Die Grünen",
+      "party2": "ÖDP",
+      "party1_wins": 199,
+      "party2_wins": 1,
+      "p1_when_first": 0.99,
+      "p1_when_second": 1,
+      "D_pp": 1.0000000000000009,
+      "majority": "Bündnis 90/Die Grünen"
+    },
+    {
+      "party1": "SPD",
+      "party2": "Freie Wähler",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "SPD"
+    },
+    {
+      "party1": "AfD",
+      "party2": "Die Linke",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Die Linke"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "BSW",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "CDU/CSU"
+    },
+    {
+      "party1": "SPD",
+      "party2": "ÖDP",
+      "party1_wins": 6,
+      "party2_wins": 194,
+      "p1_when_first": 0.06,
+      "p1_when_second": 0,
+      "D_pp": 6,
+      "majority": "ÖDP"
+    },
+    {
+      "party1": "Die Linke",
+      "party2": "FDP",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Die Linke"
+    },
+    {
+      "party1": "Die Linke",
+      "party2": "BSW",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Die Linke"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "FDP",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "CDU/CSU"
+    },
+    {
+      "party1": "Bündnis 90/Die Grünen",
+      "party2": "FDP",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Bündnis 90/Die Grünen"
+    },
+    {
+      "party1": "FDP",
+      "party2": "BSW",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "FDP"
+    },
+    {
+      "party1": "Freie Wähler",
+      "party2": "ÖDP",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "ÖDP"
+    },
+    {
+      "party1": "FDP",
+      "party2": "Volt",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Volt"
+    },
+    {
+      "party1": "SPD",
+      "party2": "Bündnis 90/Die Grünen",
+      "party1_wins": 3,
+      "party2_wins": 197,
+      "p1_when_first": 0,
+      "p1_when_second": 0.03,
+      "D_pp": 3,
+      "majority": "Bündnis 90/Die Grünen"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "ÖDP",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "ÖDP"
+    },
+    {
+      "party1": "SPD",
+      "party2": "BSW",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "SPD"
+    },
+    {
+      "party1": "Bündnis 90/Die Grünen",
+      "party2": "BSW",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Bündnis 90/Die Grünen"
+    },
+    {
+      "party1": "SPD",
+      "party2": "Die Linke",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "SPD"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "SPD",
+      "party1_wins": 33,
+      "party2_wins": 167,
+      "p1_when_first": 0,
+      "p1_when_second": 0.33,
+      "D_pp": 33,
+      "majority": "SPD"
+    },
+    {
+      "party1": "CDU/CSU",
+      "party2": "Freie Wähler",
+      "party1_wins": 100,
+      "party2_wins": 100,
+      "p1_when_first": 0.05,
+      "p1_when_second": 0.95,
+      "D_pp": 89.99999999999999,
+      "majority": null
+    },
+    {
+      "party1": "AfD",
+      "party2": "FDP",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "FDP"
+    },
+    {
+      "party1": "AfD",
+      "party2": "BSW",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "BSW"
+    },
+    {
+      "party1": "Die Linke",
+      "party2": "ÖDP",
+      "party1_wins": 1,
+      "party2_wins": 199,
+      "p1_when_first": 0,
+      "p1_when_second": 0.01,
+      "D_pp": 1,
+      "majority": "ÖDP"
+    },
+    {
+      "party1": "FDP",
+      "party2": "ÖDP",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "ÖDP"
+    },
+    {
+      "party1": "Bündnis 90/Die Grünen",
+      "party2": "Volt",
+      "party1_wins": 93,
+      "party2_wins": 107,
+      "p1_when_first": 0.93,
+      "p1_when_second": 0,
+      "D_pp": 93,
+      "majority": "Volt"
+    },
+    {
+      "party1": "Bündnis 90/Die Grünen",
+      "party2": "AfD",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Bündnis 90/Die Grünen"
+    },
+    {
+      "party1": "Bündnis 90/Die Grünen",
+      "party2": "Freie Wähler",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Bündnis 90/Die Grünen"
+    },
+    {
+      "party1": "Die Linke",
+      "party2": "Volt",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Volt"
+    },
+    {
+      "party1": "AfD",
+      "party2": "Volt",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Volt"
+    },
+    {
+      "party1": "AfD",
+      "party2": "ÖDP",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "ÖDP"
+    },
+    {
+      "party1": "SPD",
+      "party2": "AfD",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "SPD"
+    },
+    {
+      "party1": "AfD",
+      "party2": "Freie Wähler",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Freie Wähler"
+    },
+    {
+      "party1": "BSW",
+      "party2": "Freie Wähler",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Freie Wähler"
+    },
+    {
+      "party1": "Bündnis 90/Die Grünen",
+      "party2": "Die Linke",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Bündnis 90/Die Grünen"
+    },
+    {
+      "party1": "Volt",
+      "party2": "ÖDP",
+      "party1_wins": 200,
+      "party2_wins": 0,
+      "p1_when_first": 1,
+      "p1_when_second": 1,
+      "D_pp": 0,
+      "majority": "Volt"
+    },
+    {
+      "party1": "SPD",
+      "party2": "Volt",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Volt"
+    },
+    {
+      "party1": "BSW",
+      "party2": "Volt",
+      "party1_wins": 0,
+      "party2_wins": 200,
+      "p1_when_first": 0,
+      "p1_when_second": 0,
+      "D_pp": 0,
+      "majority": "Volt"
+    }
+  ],
+  "regularizedBradleyTerry": {
+    "lambda": 1,
+    "withoutPosition": [
+      {
+        "party": "Volt",
+        "ability": 5.475556129862028
+      },
+      {
+        "party": "Bündnis 90/Die Grünen",
+        "ability": 4.6324066610516015
+      },
+      {
+        "party": "ÖDP",
+        "ability": 3.510843090313181
+      },
+      {
+        "party": "SPD",
+        "ability": 2.3371617545967784
+      },
+      {
+        "party": "CDU/CSU",
+        "ability": 1.3411997013619767
+      },
+      {
+        "party": "Freie Wähler",
+        "ability": 0.3961531858231147
+      },
+      {
+        "party": "Die Linke",
+        "ability": 0.15222579252849414
+      },
+      {
+        "party": "FDP",
+        "ability": -3.118762505918651
+      },
+      {
+        "party": "BSW",
+        "ability": -5.792822849908759
+      },
+      {
+        "party": "AfD",
+        "ability": -8.933960959709767
+      }
+    ],
+    "withPosition": [
+      {
+        "party": "Volt",
+        "ability": 5.5465735675490055
+      },
+      {
+        "party": "Bündnis 90/Die Grünen",
+        "ability": 4.688717801173706
+      },
+      {
+        "party": "ÖDP",
+        "ability": 3.5504159134730466
+      },
+      {
+        "party": "SPD",
+        "ability": 2.3612691498931664
+      },
+      {
+        "party": "CDU/CSU",
+        "ability": 1.3510131309605242
+      },
+      {
+        "party": "Freie Wähler",
+        "ability": 0.38996093870681653
+      },
+      {
+        "party": "Die Linke",
+        "ability": 0.14176141819574503
+      },
+      {
+        "party": "FDP",
+        "ability": -3.1528804991260087
+      },
+      {
+        "party": "BSW",
+        "ability": -5.85291093354051
+      },
+      {
+        "party": "AfD",
+        "ability": -9.023920487285485
+      }
+    ],
+    "globalFirstPositionLogOdds": -0.3050943216463732,
+    "pFirstIfEqual": 0.42431260871060117
+  },
+  "cycles": [
+    [
+      "CDU/CSU",
+      "SPD",
+      "Bündnis 90/Die Grünen"
+    ],
+    [
+      "CDU/CSU",
+      "Bündnis 90/Die Grünen",
+      "ÖDP"
+    ]
+  ]
+}

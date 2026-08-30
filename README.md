@@ -62,6 +62,7 @@ Aktuell veröffentlichte Hauptläufe:
 
 - `gpt-5.6-sol-main-v2`
 - `grok-4.3-main-v1`
+- `opus-5-main-v1`
 
 Ergebniszahlen werden nicht in den Darstellungskomponenten manuell gepflegt, sondern aus den versionierten Experimentdaten übernommen.
 

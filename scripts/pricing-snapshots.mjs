@@ -33,6 +33,15 @@ export const PRICING_SNAPSHOTS = [
     effectiveFrom: '2026-01-01T00:00:00.000Z', // Snapshot covering the experiment date.
     source: 'xAI model documentation: docs.x.ai/developers/models/grok-4.3. Provider-reported cost_in_usd_ticks in results.jsonl independently reproduces the aggregate billed cost; tick conversion is documented at docs.x.ai/developers/cost-tracking.',
   },
+  {
+    provider: 'anthropic',
+    model: 'claude-opus-5',
+    inputPerMillionUsd: 5.0,
+    cachedInputPerMillionUsd: 0.5,
+    outputPerMillionUsd: 25.0,
+    effectiveFrom: '2026-01-01T00:00:00.000Z', // Snapshot covering the experiment date.
+    source: 'Anthropic model documentation: platform.claude.com/docs/en/about-claude/pricing (Claude Opus 5 base input/output/cache-hit pricing). The recorded run has 0 cache-write and 0 cache-read tokens throughout, so the 5-minute (1.25x) / 1-hour (2x) cache-write multipliers were never exercised and are not modeled here.',
+  },
 ];
 
 // Wählt den zum Zeitpunkt atIsoDate gültigen Snapshot für provider+model:

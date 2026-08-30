@@ -209,10 +209,31 @@ function mergeIntervals(intervals) {
   return merged;
 }
 
+// Providerübergreifende Extraktion von "gecachten Input-Tokens" und
+// "Reasoning-/Thinking-Output-Tokens": OpenAI und xAI melden
+// input_tokens_details.cached_tokens / output_tokens_details.reasoning_tokens,
+// Anthropic meldet stattdessen cache_read_input_tokens (Cache-Hits) und
+// output_tokens_details.thinking_tokens. Cache-Writes (Anthropic
+// cache_creation_input_tokens) werden hier bewusst nicht separat bepreist,
+// da in den bisherigen Läufen durchgängig 0 — vgl. Pricing-Snapshot-Quelle.
+function getCachedInputTokens(usage) {
+  if (!usage) return 0;
+  if (typeof usage.input_tokens_details?.cached_tokens === 'number') return usage.input_tokens_details.cached_tokens;
+  if (typeof usage.cache_read_input_tokens === 'number') return usage.cache_read_input_tokens;
+  return 0;
+}
+function getReasoningTokens(usage) {
+  if (!usage) return 0;
+  if (typeof usage.output_tokens_details?.reasoning_tokens === 'number') return usage.output_tokens_details.reasoning_tokens;
+  if (typeof usage.output_tokens_details?.thinking_tokens === 'number') return usage.output_tokens_details.thinking_tokens;
+  return 0;
+}
+
 // Requests, Laufzeit, Tokenverbrauch, Caching und Kosten aus den Rohdaten
 // ableiten. providerunabhängig: usage-Felder werden defensiv mit `?? 0`
-// gelesen, da OpenAI und xAI leicht unterschiedliche usage-Objekte liefern
-// (z.B. cache_write_tokens nur bei OpenAI, cost_in_usd_ticks nur bei xAI).
+// gelesen, da OpenAI, xAI und Anthropic leicht unterschiedliche usage-Objekte
+// liefern (z.B. cache_write_tokens nur bei OpenAI, cost_in_usd_ticks nur bei
+// xAI, cache_read_input_tokens/thinking_tokens nur bei Anthropic).
 function deriveUsageStats(manifest, attempts, successesBySequence) {
   const successfulAttempts = [...successesBySequence.values()];
   const failedAttempts = attempts.filter((attempt) => !(attempt.error === null && typeof attempt.chosenParty === 'string'));
@@ -313,9 +334,9 @@ function deriveUsageStats(manifest, attempts, successesBySequence) {
   for (const attempt of successfulAttempts) {
     const usage = attempt.usage ?? {};
     inputTotal += usage.input_tokens ?? 0;
-    cachedInputTotal += usage.input_tokens_details?.cached_tokens ?? 0;
+    cachedInputTotal += getCachedInputTokens(usage);
     outputTotal += usage.output_tokens ?? 0;
-    reasoningTotal += usage.output_tokens_details?.reasoning_tokens ?? 0;
+    reasoningTotal += getReasoningTokens(usage);
   }
   const uncachedInputTotal = inputTotal - cachedInputTotal;
   const totalTokens = inputTotal + outputTotal;
@@ -326,7 +347,7 @@ function deriveUsageStats(manifest, attempts, successesBySequence) {
   }
 
   // Caching der erfolgreichen Entscheidungen
-  const hitAttempts = successfulAttempts.filter((a) => (a.usage?.input_tokens_details?.cached_tokens ?? 0) > 0);
+  const hitAttempts = successfulAttempts.filter((a) => getCachedInputTokens(a.usage) > 0);
   const requestsWithCacheHit = hitAttempts.length;
   const cacheHitShare = successful > 0 ? requestsWithCacheHit / successful : 0;
   const cachedInputShare = inputTotal > 0 ? cachedInputTotal / inputTotal : 0;
@@ -355,7 +376,7 @@ function deriveUsageStats(manifest, attempts, successesBySequence) {
   for (const attempt of failedAttempts) {
     const usage = attempt.usage;
     if (!usage) continue;
-    const cached = usage.input_tokens_details?.cached_tokens ?? 0;
+    const cached = getCachedInputTokens(usage);
     const uncached = (usage.input_tokens ?? 0) - cached;
     failedAttemptsCachedInputTotal += cached;
     failedAttemptsTokenBasedUsd += (uncached / 1e6) * pricingSnapshot.inputPerMillionUsd
@@ -491,7 +512,10 @@ function run() {
     const party1Wins = pair.selections.get(party1);
     const party2Wins = pair.selections.get(party2);
     if (Math.max(party1Wins, party2Wins) === party1Wins + party2Wins) perfectDuels += 1;
-    const majority = party1Wins > party2Wins ? party1 : party2;
+    // Bei einem exakten Unentschieden (z.B. 100:100) gibt es keine Duell-
+    // mehrheit; das wird als null ausgewiesen statt einer Partei per
+    // Tie-Break zugeschlagen zu werden.
+    const majority = party1Wins > party2Wins ? party1 : party2Wins > party1Wins ? party2 : null;
     majorityByPair.set(key, majority);
     pairwise.push({ party1, party2, party1_wins: party1Wins, party2_wins: party2Wins, p1_when_first: party1WhenFirst, p1_when_second: party1WhenSecond, D_pp, majority });
   }
@@ -524,7 +548,10 @@ function run() {
       .sort((a, b) => b.ability - a.ability);
   const globalFirstPositionLogOdds = betaWithPosition[parties.length];
 
-  const cycles = detectCondorcetCycles(parties, (a, b) => majorityByPair.get(pairKey(a, b)) ?? majorityByPair.get(pairKey(b, a)));
+  // has()-Abfrage statt ??, damit ein Unentschieden (Wert null) nicht mit
+  // "Schlüssel fehlt" verwechselt wird — ein Unentschieden besiegt niemanden.
+  const majorityOf = (a, b) => (majorityByPair.has(pairKey(a, b)) ? majorityByPair.get(pairKey(a, b)) : majorityByPair.get(pairKey(b, a)));
+  const cycles = detectCondorcetCycles(parties, majorityOf);
 
   const websiteData = {
     meta: {
@@ -554,7 +581,7 @@ function run() {
 
     const csvRows = ['party1,party2,party1_wins,party2_wins,p1_when_first,p1_when_second,D_pp,majority'];
     for (const pair of sortedByD) {
-      csvRows.push([pair.party1, pair.party2, pair.party1_wins, pair.party2_wins, pair.p1_when_first, pair.p1_when_second, pair.D_pp, pair.majority].join(','));
+      csvRows.push([pair.party1, pair.party2, pair.party1_wins, pair.party2_wins, pair.p1_when_first, pair.p1_when_second, pair.D_pp, pair.majority ?? ''].join(','));
     }
     writeFileSync(join(experimentDir, 'pairwise-analysis.csv'), `${csvRows.join('\n')}\n`);
 
@@ -574,7 +601,8 @@ function run() {
       `- Zweite physische Position gewählt: **${secondSelected}/${totalRequests} = ${(secondSelected / totalRequests * 100).toFixed(1)}%**.`,
       `- 100:0-Blöcke: **${perfectBlocks}/${pairwise.length * 2}**.`,
       `- 200:0-Duelle: **${perfectDuels}/${pairwise.length}**.`,
-      `- Dreierzyklen nach Duellmehrheit: **${cycles.length}**.`,
+      `- Exakte Unentschieden (100:100) ohne Duellmehrheit: **${pairwise.filter((pair) => pair.majority === null).length}/${pairwise.length}**.`,
+      `- Dreierzyklen nach Duellmehrheit (Unentschieden zählen für keine Seite): **${cycles.length}**.`,
       '',
       '## Rang nach einfacher Auswahlquote',
       '',
