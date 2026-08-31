@@ -9,6 +9,17 @@ export const formatMinutes = (minutes: number) => {
 };
 export const formatPercent = (value: number, digits = 1) =>
   new Intl.NumberFormat('de-DE', { style: 'percent', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+const monthYearFormatter = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric', timeZone: 'Europe/Berlin' });
+const monthFormatter = new Intl.DateTimeFormat('de-DE', { month: 'long', timeZone: 'Europe/Berlin' });
+export const formatMonthYearRange = (startIso: string, endIso: string) => {
+  const start = new Date(startIso);
+  const end = new Date(endIso);
+  const startLabel = monthYearFormatter.format(start);
+  const endLabel = monthYearFormatter.format(end);
+  if (startLabel === endLabel) return startLabel;
+  if (start.getUTCFullYear() === end.getUTCFullYear()) return `${monthFormatter.format(start)}–${endLabel}`;
+  return `${startLabel} – ${endLabel}`;
+};
 export const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat('de-DE', {
     day: '2-digit',

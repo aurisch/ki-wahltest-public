@@ -7,7 +7,7 @@ import OrderComparison from '../components/OrderComparison.astro';
 import { experiments } from '../lib/experiments';
 import { buildComparison, getBiggestDivergences } from '../lib/comparison';
 import { pickSurprisePair } from '../lib/narrative';
-import { formatInteger, formatPercent } from '../lib/format';
+import { formatInteger, formatPercent, formatMonthYearRange } from '../lib/format';
 import { shortPartyName } from '../lib/parties';
 
 const completed = experiments.filter((experiment) => experiment.status === 'completed');
@@ -21,6 +21,11 @@ const modelNames = completed.map((experiment) => experiment.model.name);
 const modelNameList = modelNames.length > 1
   ? `${modelNames.slice(0, -1).join(', ')} und ${modelNames.at(-1)}`
   : modelNames[0] ?? 'Das getestete Modell';
+const timelineStarts = completed.map((experiment) => experiment.timeline.firstRequestUtc);
+const timelineEnds = completed.map((experiment) => experiment.timeline.lastSuccessfulRequestUtc);
+const dataPeriod = timelineStarts.length
+  ? formatMonthYearRange(timelineStarts.reduce((min, iso) => (iso < min ? iso : min)), timelineEnds.reduce((max, iso) => (iso > max ? iso : max)))
+  : null;
 ---
 <BaseLayout title="KI-Wahltest" description={`${formatInteger(totalDecisions)} dokumentierte Entscheidungen von ${modelNameList} zwischen ${partyCount} deutschen Parteien – Rangvergleich, Reihenfolgeeffekt und Rohdaten.`}>
   <section class="landing-hero">
@@ -37,9 +42,23 @@ const modelNameList = modelNames.length > 1
     <div class="container hero-copy">
       <p class="story-kicker">KI-Wahltest</p>
       <h1>Wie entscheiden KI-Modelle zwischen Parteien?</h1>
-      <p class="hero-facts">{formatInteger(totalDecisions)} Entscheidungen <i>·</i> {partyCount} Parteien <i>·</i> {completed.length} KI-Modelle</p>
-      <p class="hero-lede">{modelNameList} mussten nach demselben dokumentierten Versuchsaufbau wiederholt zwischen jeweils zwei deutschen Parteien entscheiden. Wir untersuchen, welche Parteien häufiger ausgewählt werden, wie stark sich die Modelle dabei unterscheiden – und wie sehr sich die Ergebnisse zwischen den beiden Reihenfolgen der Parteinamen unterscheiden.</p>
-      <p class="independent-note">Ein unabhängiges, umfangreich dokumentiertes Projekt. Keine Wahlumfrage, keine Wahlempfehlung.</p>
+      <p class="hero-facts">{formatInteger(totalDecisions)} Entscheidungen <i>·</i> {partyCount} Parteien <i>·</i> {completed.length} KI-Modelle{dataPeriod && <> <i>·</i> Erhoben {dataPeriod}</>}</p>
+      <p class="hero-lede">Keine Thesen, keine Bewertungsskala: Die Modelle bekommen jeweils zwei Parteien genannt und müssen sich für eine von beiden entscheiden. Jedes mögliche Parteienpaar wird wiederholt und in beiden Reihenfolgen getestet. {modelNameList} durchliefen denselben dokumentierten Versuchsaufbau; untersucht werden vor allem Unterschiede zwischen den Modellen und Effekte der Namensreihenfolge.</p>
+      <p class="independent-note">Ein unabhängiges, umfangreich dokumentiertes Projekt. Der Name bezeichnet das Experiment, nicht eine Wahlentscheidungshilfe. Keine Wahlumfrage, keine Wahlempfehlung.</p>
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="container">
+      <p class="eyebrow">Was hier anders ist</p>
+      <h2>Direktvergleich statt Thesenkatalog</h2>
+      <p class="lede">Andere Projekte lassen KI-Modelle häufig politische Thesen beantworten und vergleichen die Antworten anschließend mit Parteipositionen. ki-wahltest.de stellt stattdessen jeweils zwei Parteibezeichnungen direkt gegenüber und beobachtet, wie sich die Modelle dazwischen entscheiden.</p>
+      <div class="grid grid--3" style="margin-top:2.5rem">
+        <div class="card"><h3>Zwei Parteien, eine Entscheidung</h3><p class="card-copy">Das Modell erhält zwei Parteibezeichnungen und muss sich für eine von beiden entscheiden – ohne Thesen und ohne Bewertungsskala.</p></div>
+        <div class="card"><h3>Alle Paare, beide Reihenfolgen</h3><p class="card-copy">Jedes mögliche Parteienpaar wird getestet, jeweils in beiden Namensreihenfolgen und vielfach wiederholt.</p></div>
+        <div class="card"><h3>Mehrere Modelle, ein Aufbau</h3><p class="card-copy">Verschiedene KI-Modelle durchlaufen denselben dokumentierten Versuchsaufbau, wodurch sich ihre Entscheidungen direkt vergleichen lassen.</p></div>
+      </div>
+      <p class="lede detail-link"><a href="/methodik/">Einordnung und verwandte Arbeiten →</a></p>
     </div>
   </section>
 
