@@ -60,7 +60,7 @@ code { font-size: .9em; }
 .meta-list dt, .meta-list dd { margin: 0; padding: .8rem 0; border-bottom: 1px solid var(--line); }
 .meta-list dt { color: var(--muted); }
 .mono-box { overflow-x: auto; margin-top: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-soft); font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
-.tag { display: inline-flex; padding: .18rem .5rem; border: 1px solid var(--line-strong); border-radius: 99rem; color: var(--muted); font-size: .75rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+.tag { display: inline-flex; width: fit-content; padding: .18rem .5rem; border: 1px solid var(--line-strong); border-radius: 99rem; color: var(--muted); font-size: .75rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; }
 .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 1rem; margin-top: 2.5rem; }
 .model-card { position: relative; display: grid; gap: .5rem; padding: 1.4rem 3rem 1.4rem 1.4rem; border: 1px solid var(--line); color: var(--ink); background: var(--surface); text-decoration: none; }
 .model-card:hover { border-color: var(--teal); background: #f6ece2; }
